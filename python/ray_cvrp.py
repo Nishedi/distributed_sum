@@ -5,8 +5,32 @@ import ctypes
 import numpy as np
 import os
 
-# Ścieżka absolutna do biblioteki C++
-LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
+
+def get_lib_path():
+    """
+    Dynamically find the library path. Tries multiple locations:
+    1. Relative to this script's directory
+    2. ~/distributed_sum/cpp/libcvrp.so
+    3. /home/cluster/distributed_sum/cpp/libcvrp.so
+    """
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Try relative path from script location
+    possible_paths = [
+        os.path.join(script_dir, "..", "cpp", "libcvrp.so"),
+        os.path.expanduser("~/distributed_sum/cpp/libcvrp.so"),
+        "/home/cluster/distributed_sum/cpp/libcvrp.so",
+    ]
+    
+    for path in possible_paths:
+        normalized_path = os.path.normpath(path)
+        if os.path.exists(normalized_path):
+            return normalized_path
+    
+    # If none found, raise informative error
+    raise FileNotFoundError(
+        f"Could not find libcvrp.so in any of the expected locations: {possible_paths}"
+    )
 
 
 @ray.remote
@@ -15,7 +39,8 @@ def solve_city(dist_np, C, city):
     Funkcja wywoływana przez Ray worker.
     Konwertuje numpy array -> ctypes double** dopiero na workerze.
     """
-    lib = ctypes.CDLL(LIB_PATH)
+    lib_path = get_lib_path()
+    lib = ctypes.CDLL(lib_path)
 
     # Deklaracja sygnatury C++
     lib.solve_from_first_city.argtypes = [

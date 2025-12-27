@@ -3,12 +3,35 @@ import numpy as np
 import os
 from ctypes import CDLL, c_double, c_int, POINTER
 
-LIB_PATH = os.path.expanduser("~/distributed_sum/cpp/libsum.so")
-import os
-LIB_PATH = os.path.join("/home/cluster/distributed_sum/cpp/libsum.so")
+def get_lib_path():
+    """
+    Dynamically find the library path. Tries multiple locations:
+    1. Relative to this script's directory
+    2. ~/distributed_sum/cpp/libsum.so
+    3. /home/cluster/distributed_sum/cpp/libsum.so
+    """
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Try relative path from script location
+    possible_paths = [
+        os.path.join(script_dir, "..", "cpp", "libsum.so"),
+        os.path.expanduser("~/distributed_sum/cpp/libsum.so"),
+        "/home/cluster/distributed_sum/cpp/libsum.so",
+    ]
+    
+    for path in possible_paths:
+        normalized_path = os.path.normpath(path)
+        if os.path.exists(normalized_path):
+            return normalized_path
+    
+    # If none found, raise informative error
+    raise FileNotFoundError(
+        f"Could not find libsum.so in any of the expected locations: {possible_paths}"
+    )
 
 def load_lib():
-    lib = CDLL(LIB_PATH)
+    lib_path = get_lib_path()
+    lib = CDLL(lib_path)
     lib.sum_array.argtypes = [POINTER(c_double), c_int]
     lib.sum_array.restype = c_double
     return lib
