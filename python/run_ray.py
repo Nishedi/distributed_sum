@@ -29,10 +29,9 @@ def run_experiment(dist, C, first_cities, num_cpus=None, resources=None):
             _temp_dir="/tmp/ray"
         )
 
-    if resources:
-        futures = [solve_city.options(resources=resources).remote(dist, C, city) for city in first_cities]
-    else:
-        futures = [solve_city.remote(dist, C, city) for city in first_cities]
+    # Create futures with optional resource constraints
+    task_factory = solve_city.options(resources=resources) if resources else solve_city
+    futures = [task_factory.remote(dist, C, city) for city in first_cities]
 
     start = time.time()
     

@@ -3,8 +3,6 @@ import numpy as np
 import os
 from ctypes import CDLL, c_double, c_int, POINTER
 
-LIB_PATH = os.path.expanduser("~/distributed_sum/cpp/libsum.so")
-import os
 LIB_PATH = os.path.join("/home/cluster/distributed_sum/cpp/libsum.so")
 
 def load_lib():
