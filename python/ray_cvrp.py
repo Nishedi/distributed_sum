@@ -50,7 +50,6 @@ def run_distributed_bnb(n=12, C=5):
     # Uruchomienie Ray cluster z konfiguracją odporności na awarie
     ray.init(
         address="auto",
-        _node_ip_address="auto",
         ignore_reinit_error=True,
         _temp_dir="/tmp/ray"
     )
