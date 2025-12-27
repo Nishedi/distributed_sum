@@ -4,7 +4,7 @@ from ray_cvrp import solve_city
 
 ray.init(address="auto")
 np.random.seed(42)
-n = 12
+n = 15
 C = 5
 
 # dane testowe
