@@ -5,6 +5,7 @@ import ctypes
 import numpy as np
 import os
 
+LIBRARY_NAME = "libcvrp.so"
 
 def get_lib_path():
     """
@@ -17,9 +18,9 @@ def get_lib_path():
     
     # Try relative path from script location
     possible_paths = [
-        os.path.join(script_dir, "..", "cpp", "libcvrp.so"),
-        os.path.expanduser("~/distributed_sum/cpp/libcvrp.so"),
-        "/home/cluster/distributed_sum/cpp/libcvrp.so",
+        os.path.join(script_dir, "..", "cpp", LIBRARY_NAME),
+        os.path.expanduser(f"~/distributed_sum/cpp/{LIBRARY_NAME}"),
+        f"/home/cluster/distributed_sum/cpp/{LIBRARY_NAME}",
     ]
     
     for path in possible_paths:
@@ -30,7 +31,7 @@ def get_lib_path():
     # If none found, raise informative error with normalized paths
     normalized_paths = [os.path.normpath(p) for p in possible_paths]
     raise FileNotFoundError(
-        f"Could not find libcvrp.so in any of the expected locations:\n" +
+        f"Could not find {LIBRARY_NAME} in any of the expected locations:\n" +
         "\n".join(f"  - {p}" for p in normalized_paths)
     )
 
