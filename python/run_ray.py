@@ -17,22 +17,47 @@ def run_experiment(dist, C, first_cities, num_cpus=None, resources=None):
     resources: jeśli chcemy wymusić taski na konkretnym węźle
     """
     if resources:
-        ray.init(address="auto")  # użycie klastra z resource tag
+        ray.init(
+            address="auto",
+            ignore_reinit_error=True,
+            _temp_dir="/tmp/ray"
+        )
     else:
-        ray.init(num_cpus=num_cpus)  # single-node
+        ray.init(
+            num_cpus=num_cpus,
+            ignore_reinit_error=True,
+            _temp_dir="/tmp/ray"
+        )
 
     futures = [
         solve_city.options(resources=resources).remote(dist, C, city)
+        if resources else solve_city.remote(dist, C, city)
         for city in first_cities
     ]
 
     start = time.time()
-    results = ray.get(futures)
+    
+    # Pobranie wyników z obsługą błędów
+    results = []
+    for i, future in enumerate(futures):
+        try:
+            result = ray.get(future)
+            results.append(result)
+        except Exception as e:
+            print(f"Warning: Task for city {first_cities[i]} failed: {e}. Skipping...")
+            continue
+    
     end = time.time()
 
     ray.shutdown()
+    
+    if not results:
+        print("Error: All tasks failed!")
+        return None, end - start
+    
     best_global = min(results)
     elapsed = end - start
+    print(f"Completed {len(results)}/{len(first_cities)} tasks successfully")
     return best_global, elapsed
 
 # ===========================
@@ -51,7 +76,10 @@ first_cities = list(range(1, n))
 # 1️⃣ Single-node (lokalny)
 # ===========================
 best, t = run_experiment(dist, C, first_cities, num_cpus=4)
-print(f"[Single node] Best cost: {best:.2f}, Time: {t:.2f}s")
+if best is not None:
+    print(f"[Single node] Best cost: {best:.2f}, Time: {t:.2f}s")
+else:
+    print(f"[Single node] Failed to complete, Time: {t:.2f}s")
 
 # ===========================
 # 2️⃣ Specific node (musisz ustawić tag resource na węźle)
@@ -59,10 +87,16 @@ print(f"[Single node] Best cost: {best:.2f}, Time: {t:.2f}s")
 # Przyklad:
 # ray start --address=HEAD_IP:6379 --resources='{"single_node":1}'
 best, t = run_experiment(dist, C, first_cities, resources={"single_node":1})
-print(f"[Specific node] Best cost: {best:.2f}, Time: {t:.2f}s")
+if best is not None:
+    print(f"[Specific node] Best cost: {best:.2f}, Time: {t:.2f}s")
+else:
+    print(f"[Specific node] Failed to complete, Time: {t:.2f}s")
 
 # ===========================
 # 3️⃣ Full cluster
 # ===========================
 best, t = run_experiment(dist, C, first_cities)
-print(f"[Full cluster] Best cost: {best:.2f}, Time: {t:.2f}s")
+if best is not None:
+    print(f"[Full cluster] Best cost: {best:.2f}, Time: {t:.2f}s")
+else:
+    print(f"[Full cluster] Failed to complete, Time: {t:.2f}s")

@@ -14,7 +14,7 @@ def load_lib():
     return lib
 
 
-@ray.remote
+@ray.remote(max_retries=3, retry_exceptions=True)
 def sum_chunk(chunk: np.ndarray) -> float:
     # 🔒 worker ładuje bibliotekę lokalnie
     lib = load_lib()
@@ -26,7 +26,11 @@ def sum_chunk(chunk: np.ndarray) -> float:
 
 
 if __name__ == "__main__":
-    ray.init(address="auto")
+    ray.init(
+        address="auto",
+        ignore_reinit_error=True,
+        _temp_dir="/tmp/ray"
+    )
 
     # testowe dane
     data = np.random.rand(1_000_000).astype(np.float64)
@@ -36,6 +40,19 @@ if __name__ == "__main__":
     chunks = np.array_split(data, num_tasks)
 
     futures = [sum_chunk.remote(chunk) for chunk in chunks]
-    partial = ray.get(futures)
-
-    print("Suma całkowita:", sum(partial))
+    
+    # Pobranie wyników z obsługą błędów
+    partial = []
+    for i, future in enumerate(futures):
+        try:
+            result = ray.get(future)
+            partial.append(result)
+        except Exception as e:
+            print(f"Warning: Task {i} failed with error: {e}. Skipping...")
+            continue
+    
+    if partial:
+        print("Suma całkowita:", sum(partial))
+        print(f"Ukończono {len(partial)} z {len(futures)} zadań")
+    else:
+        print("Błąd: Wszystkie zadania nie powiodły się!")

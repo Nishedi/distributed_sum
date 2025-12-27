@@ -9,7 +9,7 @@ import os
 LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
 
 
-@ray.remote
+@ray.remote(max_retries=3, retry_exceptions=True)
 def solve_city(dist_np, C, city):
     """
     Funkcja wywoływana przez Ray worker.
@@ -47,17 +47,35 @@ def run_distributed_bnb(n=12, C=5):
         for j in range(n):
             dist[i, j] = np.linalg.norm(coords[i] - coords[j])
 
-    # Uruchomienie Ray cluster
-    ray.init(address="auto")
+    # Uruchomienie Ray cluster z konfiguracją odporności na awarie
+    ray.init(
+        address="auto",
+        _node_ip_address="auto",
+        ignore_reinit_error=True,
+        _temp_dir="/tmp/ray"
+    )
 
     # Tworzymy zadania dla każdego pierwszego miasta (oprócz startowego 0)
     futures = [solve_city.remote(dist, C, i) for i in range(1, n)]
 
-    # Pobranie wyników
-    results = ray.get(futures)
+    # Pobranie wyników z obsługą błędów
+    results = []
+    for future in futures:
+        try:
+            result = ray.get(future)
+            results.append(result)
+        except Exception as e:
+            print(f"Warning: Task failed with error: {e}. Skipping...")
+            continue
+    
+    if not results:
+        print("Error: All tasks failed!")
+        return None
+    
     best_global = min(results)
 
     print(f"Best global cost: {best_global}")
+    return best_global
 
 
 if __name__ == "__main__":
