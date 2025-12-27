@@ -4,9 +4,10 @@ from ray_cvrp import solve_city
 
 # Try to connect to cluster, fallback to local mode if not available
 try:
-    ray.init(address="auto", _node_ip_address="auto")
-except:
+    ray.init(address="auto")
+except (ConnectionError, RuntimeError, Exception) as e:
     # Fallback to local mode for single-node execution
+    print(f"Could not connect to Ray cluster, falling back to local mode: {e}")
     ray.init(num_cpus=4)
 
 np.random.seed(42)
