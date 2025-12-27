@@ -2,7 +2,13 @@ import ray
 import numpy as np
 from ray_cvrp import solve_city
 
-ray.init(address="auto")
+# Try to connect to cluster, fallback to local mode if not available
+try:
+    ray.init(address="auto", _node_ip_address="auto")
+except:
+    # Fallback to local mode for single-node execution
+    ray.init(num_cpus=4)
+
 np.random.seed(42)
 n = 15
 C = 5
