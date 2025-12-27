@@ -24,9 +24,11 @@ def get_lib_path():
         if os.path.exists(normalized_path):
             return normalized_path
     
-    # If none found, raise informative error
+    # If none found, raise informative error with normalized paths
+    normalized_paths = [os.path.normpath(p) for p in possible_paths]
     raise FileNotFoundError(
-        f"Could not find libsum.so in any of the expected locations: {possible_paths}"
+        f"Could not find libsum.so in any of the expected locations:\n" +
+        "\n".join(f"  - {p}" for p in normalized_paths)
     )
 
 def load_lib():
