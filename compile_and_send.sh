@@ -1,4 +1,4 @@
-g++ -O2 -fPIC -shared cpp/sum_array.cpp -o cpp/libsum.so
+g++ -O3 -fPIC -shared cpp/sum_array.cpp -o cpp/libsum.so
 scp cpp/libsum.so cluster@cluster600:/home/cluster/distributed_sum/cpp
 scp cpp/libsum.so cluster@cluster601:/home/cluster/distributed_sum/cpp
 scp cpp/libsum.so cluster@cluster602:/home/cluster/distributed_sum/cpp

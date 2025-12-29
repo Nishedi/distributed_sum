@@ -13,6 +13,7 @@ for node in $NODES; do
         source venv/bin/activate &&
         pip install --upgrade pip &&
         pip install ray numpy &&
-        g++ -O2 -fPIC -shared cpp/sum_array.cpp -o cpp/libsum.so
+        g++ -O3 -fPIC -shared cpp/distributed_bnb.cpp -o cpp/libcvrp.so &&
+        g++ -O3 -fPIC -shared cpp/sum_array.cpp -o cpp/libsum.so
     "
 done
