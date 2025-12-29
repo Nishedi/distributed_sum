@@ -1,0 +1,16 @@
+n,C,method,best_cost,time_sec,cluster_type
+10,5,Test 1: BnB bez współdzielonego ograniczenia,27019.692213627954,0.800586462020874,all nodes
+10,5,Test 2: BnB_SP bez współdzielonego ograniczenia,27019.692213627954,0.04328560829162598,all nodes
+10,5,Test 3: BnB ze współdzielonym ograniczeniem (POPRAWIONY),27019.692213627954,0.05869579315185547,all nodes
+10,5,Test 4: BnB_SP ze współdzielonym ograniczeniem (POPRAWIONY),27019.0,0.49793314933776855,all nodes
+10,5,Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY,27019.0,0.2535877227783203,all nodes
+10,5,Test 1: BnB bez współdzielonego ograniczenia,27019.692213627954,0.7901713848114014,all nodes
+10,5,Test 2: BnB_SP bez współdzielonego ograniczenia,27019.692213627954,0.03679299354553223,all nodes
+10,5,Test 3: BnB ze współdzielonym ograniczeniem (POPRAWIONY),27019.0,0.772514820098877,all nodes
+10,5,Test 4: BnB_SP ze współdzielonym ograniczeniem (POPRAWIONY),27019.692213627954,0.06818866729736328,all nodes
+10,5,Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY,27019.0,0.20872712135314941,all nodes
+10,5,Test 1: BnB bez współdzielonego ograniczenia,27019.692213627954,0.8084776401519775,all nodes
+10,5,Test 2: BnB_SP bez współdzielonego ograniczenia,27019.692213627954,0.04532980918884277,all nodes
+10,5,Test 3: BnB ze współdzielonym ograniczeniem (POPRAWIONY),27019.0,0.44116711616516113,all nodes
+10,5,Test 4: BnB_SP ze współdzielonym ograniczeniem (POPRAWIONY),27019.0,0.4388089179992676,all nodes
+10,5,Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY,27019.0,0.8996431827545166,all nodes
