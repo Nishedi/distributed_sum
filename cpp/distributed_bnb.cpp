@@ -65,11 +65,11 @@ public:
     int cut;
     int checks;
 
-    CVRP_BnB(double** dist_matrix, int size, int capacity) {
+    CVRP_BnB(double** dist_matrix, int size, int capacity, int bound_value) {
         dist = dist_matrix;
         n = size;
         C = capacity;
-        best_cost = 1e18;
+        best_cost = bound_value;
         cut = 0;
         checks = 0;
     }
@@ -138,8 +138,8 @@ public:
 // ===========================
 extern "C" {
 
-    double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting) {
-        CVRP_BnB solver(dist, n, C);
+    double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting, int bound_value) {
+        CVRP_BnB solver(dist, n, C, bound_value);
 
         bool* visited = new bool[n];
         for (int i = 0; i < n; i++) visited[i] = false;
@@ -188,7 +188,7 @@ int main() {
         load_coordinates(coords, n);
         distance_matrix(coords, dist, n);
 
-        CVRP_BnB solver(dist, n, 5);
+        CVRP_BnB solver(dist, n, 5, 1e18);
 
         bool* visited = new bool[n];
         for (int i = 0; i < n; i++) visited[i] = false;

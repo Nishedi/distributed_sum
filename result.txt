@@ -1,3 +1,6 @@
-Najlepszy wynik: 35015.86132892628  w czasie: 88.5423743724823
-
-Najlepszy wynik: 35015.86132892628  w czasie: 49.23613142967224
+# all nodes
+BnB Najlepszy wynik: 35015.86132892628  w czasie: 48.25521993637085
+BnB_SP Najlepszy wynik: 35015.86132892628  w czasie: 49.30534267425537
+# one node
+BnB Najlepszy wynik: 35015.86132892628  w czasie: 86.35319209098816
+BnB_SP Najlepszy wynik: 35015.86132892628  w czasie: 84.39956593513489
