@@ -38,19 +38,97 @@ void distance_matrix(double** coords, double** dist, int n) {
 // ===========================
 // 3. Dolne ograniczenie
 // ===========================
-double lower_bound(double** dist, bool* visited, int n) {
+void precompute_min_edges(double** dist, double* min_edges, int n) {
+    for (int i = 0; i < n; i++) {
+        double min_dist = 1e9;
+        for (int j = 0; j < n; j++) {
+            if (i != j && dist[i][j] < min_dist)
+                min_dist = dist[i][j];
+        }
+        min_edges[i] = min_dist;
+    }
+}
+
+double lower_bound(double** dist, bool* visited, double* min_edges, int n, int last_city) {
     double lb = 0.0;
+    
+    // Add minimum outgoing edges for unvisited cities
     for (int i = 1; i < n; i++) {
         if (!visited[i]) {
-            double min_dist = 1e9;
-            for (int j = 0; j < n; j++) {
-                if (i != j && dist[i][j] < min_dist)
-                    min_dist = dist[i][j];
-            }
-            lb += min_dist;
+            lb += min_edges[i];
         }
     }
+    
+    // Add estimated cost to return to depot
+    bool all_visited = true;
+    for (int i = 1; i < n; i++) {
+        if (!visited[i]) {
+            all_visited = false;
+            break;
+        }
+    }
+    
+    if (!all_visited) {
+        double min_to_depot = 1e9;
+        for (int i = 1; i < n; i++) {
+            if (!visited[i] && dist[i][0] < min_to_depot) {
+                min_to_depot = dist[i][0];
+            }
+        }
+        lb += min_to_depot;
+    }
+    
     return lb;
+}
+
+// ===========================
+// 3b. Greedy initial solution
+// ===========================
+double greedy_initial_solution(double** dist, int n, int C) {
+    bool* visited = new bool[n];
+    for (int i = 0; i < n; i++) visited[i] = false;
+    visited[0] = true;
+    
+    double total_cost = 0.0;
+    
+    while (true) {
+        bool all_visited = true;
+        for (int i = 1; i < n; i++) {
+            if (!visited[i]) {
+                all_visited = false;
+                break;
+            }
+        }
+        if (all_visited) break;
+        
+        int current = 0;
+        int current_load = 0;
+        
+        while (current_load < C) {
+            // Find nearest unvisited city
+            double min_dist = 1e9;
+            int next_city = -1;
+            for (int i = 1; i < n; i++) {
+                if (!visited[i] && dist[current][i] < min_dist) {
+                    min_dist = dist[current][i];
+                    next_city = i;
+                }
+            }
+            
+            if (next_city == -1) break;
+            
+            total_cost += dist[current][next_city];
+            visited[next_city] = true;
+            current = next_city;
+            current_load++;
+        }
+        
+        // Return to depot
+        total_cost += dist[current][0];
+    }
+    
+    delete[] visited;
+    return total_cost;
 }
 
 // ===========================
@@ -64,14 +142,28 @@ public:
     double best_cost;
     int cut;
     int checks;
+    double* min_edges;
 
-    CVRP_BnB(double** dist_matrix, int size, int capacity) {
+    CVRP_BnB(double** dist_matrix, int size, int capacity, bool use_greedy_init = true) {
         dist = dist_matrix;
         n = size;
         C = capacity;
-        best_cost = 1e18;
         cut = 0;
         checks = 0;
+        // Precompute minimum edges
+        min_edges = new double[n];
+        precompute_min_edges(dist, min_edges, n);
+        
+        // Use greedy heuristic for initial upper bound
+        if (use_greedy_init) {
+            best_cost = greedy_initial_solution(dist, n, capacity);
+        } else {
+            best_cost = 1e18;
+        }
+    }
+    
+    ~CVRP_BnB() {
+        delete[] min_edges;
     }
 
     void branch_and_bound(int* route, int route_len,
@@ -97,27 +189,52 @@ public:
         }
 
         // lower bound
-        double lb = current_cost + lower_bound(dist, visited, n);
+        double lb = current_cost + lower_bound(dist, visited, min_edges, n, route[route_len - 1]);
         checks++;
         if (lb >= best_cost && cutting) {
             cut++;
             return;
         }
 
-        // dodawanie miast
+        // dodawanie miast - sortuj według odległości (najbliższe pierwsze)
+        struct CityDist {
+            double dist;
+            int city;
+        };
+        CityDist candidates[20];
+        int count = 0;
+        
         for (int i = 1; i < n; i++) {
             if (!visited[i] && current_load + 1 <= C) {
-                visited[i] = true;
-                route[route_len] = i;
-
-                branch_and_bound(route, route_len + 1,
-                    visited,
-                    current_load + 1,
-                    current_cost + dist[route[route_len - 1]][i],
-                    cutting);
-
-                visited[i] = false;
+                candidates[count].dist = dist[route[route_len - 1]][i];
+                candidates[count].city = i;
+                count++;
             }
+        }
+        
+        // Simple bubble sort (for small n this is fine)
+        for (int i = 0; i < count - 1; i++) {
+            for (int j = 0; j < count - i - 1; j++) {
+                if (candidates[j].dist > candidates[j + 1].dist) {
+                    CityDist temp = candidates[j];
+                    candidates[j] = candidates[j + 1];
+                    candidates[j + 1] = temp;
+                }
+            }
+        }
+        
+        for (int idx = 0; idx < count; idx++) {
+            int i = candidates[idx].city;
+            visited[i] = true;
+            route[route_len] = i;
+
+            branch_and_bound(route, route_len + 1,
+                visited,
+                current_load + 1,
+                current_cost + dist[route[route_len - 1]][i],
+                cutting);
+
+            visited[i] = false;
         }
 
         // nowy pojazd

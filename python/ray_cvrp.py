@@ -11,6 +11,26 @@ LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
 #LIB_PATH = "/home/kpempera/distributed_sum/cpp/libcvrp.so"
 
 @ray.remote
+class BestCostActor:
+    """
+    Actor do współdzielenia najlepszego znalezionego kosztu między workerami.
+    Pozwala na lepsze przycinanie gałęzi w czasie rzeczywistym.
+    """
+    def __init__(self):
+        self.best_cost = float('inf')
+    
+    def update(self, cost):
+        """Aktualizuj najlepszy koszt jeśli znaleziono lepszy"""
+        if cost < self.best_cost:
+            self.best_cost = cost
+            return True
+        return False
+    
+    def get(self):
+        """Pobierz aktualny najlepszy koszt"""
+        return self.best_cost
+
+@ray.remote
 def solve_city(dist_np, C, city, BnB):
     """
     Funkcja wywoływana przez Ray worker.
