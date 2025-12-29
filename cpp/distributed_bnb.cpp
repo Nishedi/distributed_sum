@@ -17,7 +17,7 @@ void load_coordinates(double** coords, int n) {
 }
 
 // ===========================
-// 2. Macierz odleg³oœci
+// 2. Macierz odlegï¿½oï¿½ci
 // ===========================
 double euclidean(double* p1, double* p2) {
     return sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) +
@@ -54,7 +54,7 @@ double lower_bound(double** dist, bool* visited, int n) {
 }
 
 // ===========================
-// 4. Branch and Bound – CVRP
+// 4. Branch and Bound ï¿½ CVRP
 // ===========================
 class CVRP_BnB {
 public:
@@ -138,7 +138,7 @@ public:
 // ===========================
 extern "C" {
 
-    double solve_from_first_city(double** dist, int n, int C, int first_city) {
+    double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting) {
         CVRP_BnB solver(dist, n, C);
 
         bool* visited = new bool[n];
@@ -157,7 +157,7 @@ extern "C" {
             visited,
             1,
             dist[0][first_city],
-            true
+            cutting!=0
         );
 
         double result = solver.best_cost;

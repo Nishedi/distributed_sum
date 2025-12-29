@@ -11,7 +11,7 @@ LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
 #LIB_PATH = "/home/kpempera/distributed_sum/cpp/libcvrp.so"
 
 @ray.remote
-def solve_city(dist_np, C, city):
+def solve_city(dist_np, C, city, BnB):
     """
     Funkcja wywoływana przez Ray worker.
     Konwertuje numpy array -> ctypes double** dopiero na workerze.
@@ -23,7 +23,8 @@ def solve_city(dist_np, C, city):
         ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
         ctypes.c_int,
         ctypes.c_int,
-        ctypes.c_int
+        ctypes.c_int,
+        ctypes.c_int,
     ]
     lib.solve_from_first_city.restype = ctypes.c_double
 
@@ -36,10 +37,10 @@ def solve_city(dist_np, C, city):
         c_mat[i] = row
 
     # Wywołanie C++ BnB dla pierwszego miasta
-    return lib.solve_from_first_city(c_mat, n, C, city)
+    return lib.solve_from_first_city(c_mat, n, C, city, BnB)
 
 
-def run_distributed_bnb(n=12, C=5):
+def run_distributed_bnb(n=12, C=5, BnB = 1):
     # Tworzenie losowych danych
     coords = np.random.rand(n, 2) * 10000
     dist = np.zeros((n, n))
@@ -52,7 +53,7 @@ def run_distributed_bnb(n=12, C=5):
     ray.init(address="auto")
 
     # Tworzymy zadania dla każdego pierwszego miasta (oprócz startowego 0)
-    futures = [solve_city.remote(dist, C, i) for i in range(1, n)]
+    futures = [solve_city.remote(dist, C, i, BnB) for i in range(1, n)]
 
     # Pobranie wyników
     results = ray.get(futures)
