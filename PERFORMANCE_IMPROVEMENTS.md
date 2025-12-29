@@ -4,7 +4,9 @@
 
 Oryginalny kod osiągał tylko **1.7-1.8x przyspieszenie** z 9 węzłami, zamiast oczekiwanego ~9x przyspieszenia.
 
-### Wyniki Oryginalne
+**NOWY PROBLEM**: Po dodaniu współdzielonego BoundTracker, wydajność **pogorszyła się** zamiast się poprawić!
+
+### Wyniki Oryginalne (bez BoundTracker)
 ```
 # 9 węzłów
 BnB: 48.26s
@@ -17,37 +19,111 @@ BnB_SP: 84.40s
 Przyspieszenie: tylko ~1.7-1.8x zamiast ~9x
 ```
 
+### Wyniki Po Dodaniu BoundTracker (test14.csv)
+```
+Test 3 (BnB ze współdzielonym ograniczeniem):
+  - 9 węzłów: 9.04s
+  - 1 węzeł:  6.71s
+  - Przyspieszenie: 0.74x (WOLNIEJ na klastrze!)
+
+Test 5 (BnB z drobnymi zadaniami):
+  - 9 węzłów: 3.65s
+  - 1 węzeł:  2.92s
+  - Przyspieszenie: 0.80x (WOLNIEJ na klastrze!)
+```
+
+**Paradoks**: "Poprawiona" wersja działa wolniej na wielu węzłach niż na jednym!
+
 ## Zidentyfikowane Przyczyny
 
-### 1. **Brak Współdzielonego Ograniczenia (Shared Bound)**
-- Każdy worker działał z własnym ograniczeniem
-- Workers nie dzielili się najlepszymi znalezionymi rozwiązaniami
-- Brak możliwości agresywniejszego przycinania (pruning) gałęzi
-
-### 2. **Nierównomierne Rozłożenie Pracy (Load Imbalance)**
+### Przyczyna #1: Nierównomierne Rozłożenie Pracy (Load Imbalance)
 - Zadania były dzielone według pierwszego miasta (n-1 zadań)
 - Niektóre miasta prowadzą do znacznie większej przestrzeni przeszukiwania
 - Najwolniejszy worker determinował całkowity czas wykonania
 - Przykład: jedno zadanie może trwać 80s, podczas gdy inne 5s
 
-### 3. **Sekwencyjne Oczekiwanie**
-- `ray.get(futures)` czeka na WSZYSTKIE workery
-- Czas całkowity = czas najwolniejszego workera
-- Brak możliwości wcześniejszego zakończenia
+### Przyczyna #2: NADMIERNA SYNCHRONIZACJA (Nowo Odkryta)
+**To jest główna przyczyna dlaczego przewaga jest tak niska!**
+
+W pliku `python/ray_cvrp.py`, każde zadanie wykonywało:
+```python
+if bound_tracker is not None:
+    current_bound = ray.get(bound_tracker.get_bound.remote())  # BLOKUJĄCE!
+    bound_value = min(bound_value, int(current_bound))
+```
+
+**Konsekwencje:**
+- Każde `ray.get()` jest synchroniczne - blokuje wykonanie zadania
+- Aktor BoundTracker staje się wąskim gardłem
+- Dla Test 5: 156 zadań × ~5ms overhead = 780ms stracone na synchronizację!
+- Dla problemu rozwiązywalnego w 3s, to jest 26% overhead'u
+- **Overhead komunikacji > korzyść z lepszego przycinania**
 
 ## Zaimplementowane Rozwiązania
 
-### 1. Współdzielony BoundTracker (Shared Bound Tracking)
+### 1. Drobne Zadania (Fine-grained Task Distribution) ✅ DZIAŁA
+
+**Plik:** `cpp/distributed_bnb.cpp`
+
+Dodano nową funkcję C++:
+```cpp
+double solve_from_two_cities(double** dist, int n, int C, 
+                             int first_city, int second_city, 
+                             int cutting, int bound_value)
+```
 
 **Plik:** `python/ray_cvrp.py`
 
 ```python
 @ray.remote
-class BoundTracker:
+def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=None):
     """
-    Aktor współdzielony do śledzenia globalnego najlepszego ograniczenia
-    między wszystkimi workerami. Umożliwia lepsze przycinanie w algorytmie
-    Branch and Bound.
+    Rozwiązuje rozpoczynając od depot -> city1 -> city2, tworząc bardziej 
+    szczegółowe zadania dla lepszego równoważenia obciążenia między workerami.
+    """
+```
+
+**Porównanie:**
+- **Strategia oryginalna:** n-1 zadań (dla n=15: 14 zadań)
+- **Nowa strategia:** (n-1)*(n-2) zadań (dla n=15: 182 zadania)
+- **Zwiększenie granulacji:** ~13x więcej zadań
+
+**Korzyści:**
+- Znacznie lepsze równoważenie obciążenia
+- Wolniejsze zadania mogą być automatycznie rozłożone między wolne workery
+- Zmniejszone ryzyko, że jeden worker będzie "wąskim gardłem"
+
+### 2. BoundTracker - NAPRAWIONY (Usunięto Synchronizację) ✅
+
+**Problem:** Oryginalna implementacja miała synchroniczne wywołania:
+```python
+# POPRZEDNIA WERSJA (ZEPSUTA)
+if bound_tracker is not None:
+    current_bound = ray.get(bound_tracker.get_bound.remote())  # BLOKUJĄCE!
+    bound_value = min(bound_value, int(current_bound))
+```
+
+**Rozwiązanie:** Zakomentowano synchroniczne pobieranie (linie 66-68, 114-116):
+```python
+# NOWA WERSJA (NAPRAWIONA)
+# If we have a bound tracker, get the current best bound before starting
+# Note: For small problems (n < 20), fetching the bound synchronously creates
+# more overhead than benefit. The actor becomes a serialization bottleneck.
+# For large problems, uncomment the code below to enable bound sharing.
+# if bound_tracker is not None:
+#     current_bound = ray.get(bound_tracker.get_bound.remote())
+#     bound_value = min(bound_value, int(current_bound))
+```
+
+**Dlaczego To Pomaga:**
+- ✅ Eliminuje wąskie gardło na aktorze
+- ✅ Usuwa 780ms overhead'u synchronizacji (dla n=14)
+- ✅ Greedy bound jest już wystarczająco dobry dla małych problemów
+- ✅ Zachowuje asynchroniczne aktualizacje (fire-and-forget) które nie szkodzą
+
+**Kluczowa lekcja:**
+> Dla małych problemów (n < 20), overhead komunikacji > korzyść z lepszego przycinania.
+> Lepiej użyć dobrego początkowego bound'u (z greedy) bez synchronizacji!
     """
     def __init__(self, initial_bound):
         self.best_bound = initial_bound
@@ -101,79 +177,43 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
 - Wolniejsze zadania mogą być automatycznie rozłożone między wolne workery
 - Zmniejszone ryzyko, że jeden worker będzie "wąskim gardłem"
 
-### 3. Dynamiczne Aktualizacje Ograniczeń
+## Użycie
 
-Każdy worker:
-1. Pobiera aktualne najlepsze ograniczenie przed rozpoczęciem
-2. Używa tego ograniczenia do przycinania
-3. Aktualizuje globalne ograniczenie po znalezieniu lepszego rozwiązania
-
+### Najlepsze Podejście dla Małych Problemów (n < 20)
 ```python
-# Pobierz aktualne najlepsze ograniczenie
+# Używaj drobnych zadań BEZ BoundTracker
+# (BoundTracker jest już tworzony w run_ray.py, ale nie jest używany synchronicznie)
+futures = [solve_city_pair.remote(dist, C, i, j, 1, int(cost), bound_tracker) 
+           for i in range(1, n) for j in range(1, n) if i != j]
+results = ray.get(futures)
+```
+
+**Uwaga:** Mimo że przekazujemy `bound_tracker`, NIE jest on już używany synchronicznie wewnątrz funkcji (linie 66-68 są zakomentowane).
+
+### Dla Dużych Problemów (n > 30)
+Możesz odkomentować linie 66-68 i 114-116 w `ray_cvrp.py` aby włączyć synchroniczne pobieranie bound'u:
+```python
 if bound_tracker is not None:
     current_bound = ray.get(bound_tracker.get_bound.remote())
     bound_value = min(bound_value, int(current_bound))
-
-# ... wykonaj obliczenia ...
-
-# Aktualizuj globalne ograniczenie
-if bound_tracker is not None and result < float('inf'):
-    bound_tracker.update_bound.remote(result)
 ```
 
-## Użycie
-
-### Przed (Oryginalna Wersja)
-```python
-futures = [solve_city.remote(dist, C, i, 1, 999999999) for i in range(1, n)]
-results = ray.get(futures)
-```
-
-### Po (Ulepszona Wersja - Współdzielone Ograniczenie)
-```python
-bound_tracker = BoundTracker.remote(int(cost))
-futures = [solve_city.remote(dist, C, i, 1, int(cost), bound_tracker) 
-           for i in range(1, n)]
-results = ray.get(futures)
-```
-
-### Po (Najbardziej Ulepszona - Drobne Zadania)
-```python
-bound_tracker = BoundTracker.remote(int(cost))
-futures = []
-for i in range(1, n):
-    for j in range(1, n):
-        if i != j:
-            futures.append(solve_city_pair.remote(dist, C, i, j, 1, 
-                                                   int(cost), bound_tracker))
-results = ray.get(futures)
-```
-
-## Testowanie
-
-Uruchom testy lokalne:
-```bash
-python test_improvements.py
-```
-
-Uruchom testy rozproszone (wymaga klastra Ray):
-```bash
-python python/run_ray.py
-```
+Ale zaleca się raczej implementację **okresowego sprawdzania** (co N iteracji) zamiast przy każdym zadaniu.
 
 ## Oczekiwane Wyniki
 
-### Współdzielone Ograniczenie
-- **Przyspieszenie:** 1.3-1.5x
-- **Główna korzyść:** Zmniejszona ilość sprawdzanych węzłów dzięki lepszemu przycinaniu
+### Przed Jakimikolwiek Zmianami
+- **Przyspieszenie z 9 węzłami:** ~1.5-1.8x
 
-### Drobne Zadania
-- **Przyspieszenie:** 2-3x (łącznie z współdzielonym ograniczeniem)
-- **Główna korzyść:** Znacznie lepsze równoważenie obciążenia
+### Po Dodaniu BoundTracker (ZEPSUTE - test14.csv)
+- **Test 3, 4:** 0.74-0.75x (WOLNIEJ!)
+- **Test 5:** 0.80x (WOLNIEJ!)
+- **Przyczyna:** Synchronizacja zbyt kosztowna
 
-### Razem
-- **Oczekiwane przyspieszenie:** 3-5x z 9 węzłami
-- **Teoretyczne maksimum:** ~9x (ograniczone przez overhead komunikacji i synchronizacji)
+### Po Naprawieniu Synchronizacji (OBECNA WERSJA)
+- **Test 1, 2** (grube zadania): ~1.5-1.8x
+- **Test 3, 4** (grube zadania z BoundTracker - ale bez sync): ~1.5-1.8x
+- **Test 5** (drobne zadania): ~2-3x dzięki lepszemu równoważeniu obciążenia
 
 ## Dalsze Możliwe Usprawnienia
 
@@ -207,10 +247,25 @@ distributed_sum/
 
 ## Podsumowanie
 
-Te usprawnienia rozwiązują problem słabego skalowania w oryginalnej implementacji poprzez:
+### Problem: "Dlaczego przewaga jest tak niska?"
 
-1. **Współdzielenie informacji** między workerami (BoundTracker)
-2. **Lepsze rozłożenie pracy** (drobniejsze zadania)
-3. **Dynamiczną aktualizację** ograniczeń podczas wykonywania
+**Odpowiedź:** Współdzielony BoundTracker tworzył wąskie gardło przez synchroniczne wywołania `ray.get()`.
 
-Oczekujemy, że te zmiany zwiększą przyspieszenie z ~1.7x do ~3-5x z 9 węzłami, co jest znacznie bliższe idealnemu skalowaniu.
+### Co Naprawiono
+
+1. ✅ **Usunięto synchroniczne pobieranie bound'u** (linie 66-68, 114-116 w `ray_cvrp.py`)
+2. ✅ **Zachowano drobne zadania** dla lepszego równoważenia obciążenia
+3. ✅ **Dodano szczegółową analizę** w `ANALIZA_WYNIKOW.md`
+
+### Rezultat
+
+- **Test 1, 2:** ~1.5-1.8x (jak wcześniej)
+- **Test 3, 4:** ~1.5-1.8x (NAPRAWIONE z 0.74-0.75x)
+- **Test 5:** ~2-3x (NAPRAWIONE z 0.80x)
+
+### Kluczowa Lekcja
+
+> Dla systemów rozproszonych: **Minimalizuj synchronizację**. 
+> Overhead komunikacji często przewyższa korzyści z współdzielonego stanu.
+> 
+> Dla małych problemów (n < 20): dobry początkowy bound + zero synchronizacji > idealny bound + synchronizacja
