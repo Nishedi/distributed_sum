@@ -139,6 +139,12 @@ public:
 extern "C" {
 
     double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting, int bound_value) {
+        // Safety check: ensure n doesn't exceed maximum route size
+        if (n > 20) {
+            cerr << "Error: Number of cities exceeds maximum supported (20)" << endl;
+            return 1e18;
+        }
+        
         CVRP_BnB solver(dist, n, C, bound_value);
 
         bool* visited = new bool[n];
@@ -157,6 +163,41 @@ extern "C" {
             visited,
             1,
             dist[0][first_city],
+            cutting!=0
+        );
+
+        double result = solver.best_cost;
+        delete[] visited;
+        return result;
+    }
+
+    double solve_from_two_cities(double** dist, int n, int C, int first_city, int second_city, int cutting, int bound_value) {
+        // Safety check: ensure n doesn't exceed maximum route size
+        if (n > 20) {
+            cerr << "Error: Number of cities exceeds maximum supported (20)" << endl;
+            return 1e18;
+        }
+        
+        CVRP_BnB solver(dist, n, C, bound_value);
+
+        bool* visited = new bool[n];
+        for (int i = 0; i < n; i++) visited[i] = false;
+
+        visited[0] = true;
+        visited[first_city] = true;
+        visited[second_city] = true;
+
+        int route[20];
+        route[0] = 0;
+        route[1] = first_city;
+        route[2] = second_city;
+
+        solver.branch_and_bound(
+            route,
+            3,
+            visited,
+            2,
+            dist[0][first_city] + dist[first_city][second_city],
             cutting!=0
         );
 
