@@ -25,7 +25,7 @@ if bound_tracker is not None:
 
 ### Why This Was Problematic
 
-1. **Contention**: For Test 5 with n=14, there are 13×12 = **156 tasks**, meaning 156 synchronous network calls to a single actor
+1. **Contention**: For Test 5 with n=14, there are (n-1)×(n-2) = 13×12 = **156 tasks**, meaning 156 synchronous network calls to a single actor
 2. **Serialization**: Each call gets queued at the BoundTracker actor, creating a bottleneck
 3. **Network Overhead**: In multi-node setup, each `ray.get()` involves network round-trip
 4. **Blocking**: Tasks wait idle during the network call instead of starting computation

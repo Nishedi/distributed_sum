@@ -18,7 +18,7 @@ Translation: "Why does it work so strangely? On single node it works, the best v
 After implementing BoundTracker and fine-grained tasks (Test 5), the results showed:
 - **All nodes (n=14)**: Test 5 took 3.65s
 - **Single node (n=14)**: Test 5 took 2.92s
-- **Speedup**: 0.80x ⚠️ **Single node was FASTER than multi-node!**
+- **Speedup**: 0.80x ⚠️ **Multi-node was 25% SLOWER than single-node!**
 
 This is the OPPOSITE of what should happen. See `BOUNDTRACKER_FIX.md` for details.
 

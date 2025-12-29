@@ -65,8 +65,9 @@ def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):
     # Instead, we:
     # 1. Start immediately with the provided bound_value (e.g., from greedy solution)
     # 2. Update the shared bound asynchronously when we find better solutions
-    # 3. Other tasks benefit indirectly as the C++ solver naturally prunes with
-    #    better bounds found by earlier-completing tasks
+    # 3. The BoundTracker maintains the best-ever bound (useful for monitoring/debugging)
+    # 4. Individual tasks don't fetch updates, but the C++ solver still prunes
+    #    effectively with the initial greedy bound
     # This approach eliminates the bottleneck of 100+ tasks all fetching from
     # the same actor at startup, especially critical for fine-grained task distribution.
 
