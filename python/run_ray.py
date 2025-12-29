@@ -131,11 +131,8 @@ print("=== Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWION
 start_time = time.time()
 bound_tracker = BoundTracker.remote(int(cost))
 # Create tasks for pairs of cities for better load balancing
-futures = []
-for i in range(1, n):
-    for j in range(1, n):
-        if i != j:
-            futures.append(solve_city_pair.remote(dist, C, i, j, 1, int(cost), bound_tracker))
+futures = [solve_city_pair.remote(dist, C, i, j, 1, int(cost), bound_tracker) 
+           for i in range(1, n) for j in range(1, n) if i != j]
 
 results = ray.get(futures)
 end_time = time.time()-start_time

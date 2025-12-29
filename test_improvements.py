@@ -67,7 +67,7 @@ def test_basic_functionality():
         for j in range(n):
             dist[i, j] = np.linalg.norm(coords[i] - coords[j])
     
-    route, cost = greedy_cvrp_1nn(dist, C=5)
+    route, cost = greedy_cvrp_1nn(dist, C=C)
     
     print(f"  Generated {n} cities")
     print(f"  Greedy solution cost: {cost:.2f}")
