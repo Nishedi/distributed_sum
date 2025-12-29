@@ -10,8 +10,30 @@ import os
 LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
 #LIB_PATH = "/home/kpempera/distributed_sum/cpp/libcvrp.so"
 
+
 @ray.remote
-def solve_city(dist_np, C, city, BnB, bound_value):
+class BoundTracker:
+    """
+    Shared actor to track the global best bound across all workers.
+    This enables better pruning in the Branch and Bound algorithm.
+    """
+    def __init__(self, initial_bound):
+        self.best_bound = initial_bound
+    
+    def update_bound(self, new_bound):
+        """Update the best bound if the new bound is better."""
+        if new_bound < self.best_bound:
+            self.best_bound = new_bound
+            return True
+        return False
+    
+    def get_bound(self):
+        """Get the current best bound."""
+        return self.best_bound
+
+
+@ray.remote
+def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):
     """
     Funkcja wywoływana przez Ray worker.
     Konwertuje numpy array -> ctypes double** dopiero na workerze.
@@ -37,8 +59,19 @@ def solve_city(dist_np, C, city, BnB, bound_value):
         row = (ctypes.c_double * n)(*dist_np[i])
         c_mat[i] = row
 
+    # If we have a bound tracker, get the current best bound before starting
+    if bound_tracker is not None:
+        current_bound = ray.get(bound_tracker.get_bound.remote())
+        bound_value = min(bound_value, int(current_bound))
+
     # Wywołanie C++ BnB dla pierwszego miasta
-    return lib.solve_from_first_city(c_mat, n, C, city, BnB, bound_value)
+    result = lib.solve_from_first_city(c_mat, n, C, city, BnB, bound_value)
+    
+    # Update the global bound if we found a better solution
+    if bound_tracker is not None and result < float('inf'):
+        bound_tracker.update_bound.remote(result)
+    
+    return result
 
 
 def run_distributed_bnb(n=12, C=5, BnB = 1, bound_value=1e18):

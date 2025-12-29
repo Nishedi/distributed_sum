@@ -55,7 +55,7 @@ def greedy_cvrp_1nn(dist, C=5):
 import ray
 import time
 import numpy as np
-from ray_cvrp import solve_city
+from ray_cvrp import solve_city, BoundTracker
 
 ray.init(address="auto")
 np.random.seed(42)
@@ -75,7 +75,8 @@ print("Długość trasy:", cost)
 futures = [solve_city.remote(dist, C, i, 1, 999999999) for i in range(1, n)]
 results = ray.get(futures)
 
-# startujemy od 1..n-1
+# Test 1: BnB without shared bound (original)
+print("\n=== Test 1: BnB without shared bound ===")
 start_time = time.time()
 futures = [solve_city.remote(dist, C, i, 1, 999999999) for i in range(1, n)]
 results = ray.get(futures)
@@ -83,12 +84,34 @@ end_time = time.time()-start_time
 
 print("BnB Najlepszy wynik:", min(results), " w czasie:", end_time)
 
+# Test 2: BnB_SP without shared bound (original)
+print("\n=== Test 2: BnB_SP without shared bound ===")
 start_time = time.time()
 futures = [solve_city.remote(dist, C, i, 1, int(cost)) for i in range(1, n)]
 results = ray.get(futures)
 end_time = time.time()-start_time
 
 print("BnB_SP Najlepszy wynik:", min(results), " w czasie:", end_time)
+
+# Test 3: BnB with shared bound tracker (IMPROVED)
+print("\n=== Test 3: BnB with shared bound tracker (IMPROVED) ===")
+start_time = time.time()
+bound_tracker = BoundTracker.remote(999999999)
+futures = [solve_city.remote(dist, C, i, 1, 999999999, bound_tracker) for i in range(1, n)]
+results = ray.get(futures)
+end_time = time.time()-start_time
+
+print("BnB with shared bound Najlepszy wynik:", min(results), " w czasie:", end_time)
+
+# Test 4: BnB_SP with shared bound tracker (IMPROVED)
+print("\n=== Test 4: BnB_SP with shared bound tracker (IMPROVED) ===")
+start_time = time.time()
+bound_tracker = BoundTracker.remote(int(cost))
+futures = [solve_city.remote(dist, C, i, 1, int(cost), bound_tracker) for i in range(1, n)]
+results = ray.get(futures)
+end_time = time.time()-start_time
+
+print("BnB_SP with shared bound Najlepszy wynik:", min(results), " w czasie:", end_time)
 
 #start_time = time.time()
 #futures = [solve_city.remote(dist, C, i, 0, 999999999) for i in range(1, n)]
