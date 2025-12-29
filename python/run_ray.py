@@ -59,12 +59,13 @@ from ray_cvrp import solve_city, solve_city_pair, BoundTracker
 
 ray.init(address="auto")
 np.random.seed(42)
-n = 15
+n = 14
 C = 5
 
 # dane testowe
 coords = np.random.rand(n, 2) * 10000
 dist = np.zeros((n, n))
+results = []
 
 for i in range(n):
     for j in range(n):
@@ -75,10 +76,8 @@ print("Długość trasy:", cost)
 print(f"Liczba węzłów: {n}")
 print(f"Pojemność pojazdu: {C}")
 print()
-
 # Warm-up run to load libraries
 futures = [solve_city.remote(dist, C, i, 1, 999999999) for i in range(1, min(3, n))]
-results = ray.get(futures)
 
 # Test 1: BnB without shared bound (original)
 print("=== Test 1: BnB bez współdzielonego ograniczenia ===")
@@ -90,6 +89,7 @@ end_time = time.time()-start_time
 print(f"Najlepszy wynik: {min(results)}")
 print(f"Czas: {end_time:.4f}s")
 print()
+
 
 # Test 2: BnB_SP without shared bound (original)
 print("=== Test 2: BnB_SP bez współdzielonego ograniczenia ===")
