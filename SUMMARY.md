@@ -15,6 +15,13 @@ After implementing shared bounds (test14.csv):
 - **Test 3-5 (with BoundTracker)**: 0.74-0.80x (SLOWER on cluster than single node!)
 - **Test 1-2 (without BoundTracker)**: 1.55-1.58x (faster, but still not ideal)
 
+### Issue #3: Incorrect Ray Initialization (ROOT CAUSE)
+**User reported**: Even after removing synchronous calls, performance was still poor.
+**Real problem discovered**: `run_ray.py` always used `ray.init(address="auto")` for BOTH tests!
+- The `--ct` parameter only changed the CSV label
+- Both "single node" and "all nodes" connected to the cluster
+- This made the comparison meaningless and added cluster overhead to both tests
+
 ## Root Cause Analysis
 
 The poor scaling was caused by several issues:
@@ -23,12 +30,20 @@ The poor scaling was caused by several issues:
 1. **Load Imbalance**: Tasks divided by first city created highly uneven workloads
 2. **Sequential Wait**: Total time = slowest worker's time
 
-### New Issue Discovered (Why shared bounds made it worse)
-3. **Excessive Synchronization**: Each task performed `ray.get(bound_tracker.get_bound.remote())` at startup
+### Issue #2: Excessive Synchronization
+3. **Synchronous BoundTracker calls**: Each task performed `ray.get(bound_tracker.get_bound.remote())` at startup
    - For Test 5: 156 tasks × synchronous call = serialization bottleneck
    - BoundTracker actor became a serialization point
    - Communication overhead > benefit from better pruning
    - **Result**: "Improved" versions were slower than originals!
+
+### Issue #3: Incorrect Ray Initialization (ROOT CAUSE)
+4. **Both tests connected to cluster**: `ray.init(address="auto")` was always used
+   - The `--ct "single node"` parameter only changed CSV labels
+   - Both tests ran on cluster with different scheduling behavior
+   - Made performance comparison meaningless
+   - Added unnecessary cluster overhead to "single node" test
+   - **This is why user saw slowdown even after fixing synchronization**
 
 ## Implemented Solution
 
@@ -43,9 +58,17 @@ The poor scaling was caused by several issues:
 - **Solution**: Commented out synchronous bound fetching in `ray_cvrp.py`
 - Greedy bound is already good enough for small problems (n < 20)
 - Kept async fire-and-forget updates (don't hurt performance)
-- **Expected improvement**: Eliminate 0.74-0.80x slowdown, achieve 1.5-3x speedup
+- **Expected improvement**: Eliminate 0.74-0.80x slowdown
 
-### 3. Safety and Quality Improvements
+### 3. Correct Ray Initialization (NEW FIX)
+- **Problem Found**: Both tests always used `ray.init(address="auto")`
+- **Solution**: Modified `run_ray.py` to check `--ct` parameter:
+  - `--ct "single node"`: Uses `ray.init()` (local mode, no cluster)
+  - `--ct "all nodes"`: Uses `ray.init(address="auto")` (cluster mode)
+- **Expected improvement**: True comparison between local and distributed execution
+- **This was the missing piece** that caused user's continued slowdown
+
+### 4. Safety and Quality Improvements
 - Added buffer overflow checks (n > 20 limit)
 - Improved code documentation
 - Added comprehensive tests

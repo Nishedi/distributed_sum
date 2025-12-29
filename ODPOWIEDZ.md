@@ -2,9 +2,12 @@
 
 ## Krótka Odpowiedź
 
-**Przewaga była tak niska (a nawet ujemna!) ponieważ synchroniczne wywołania `ray.get()` do współdzielonego aktora BoundTracker tworzyły wąskie gardło komunikacyjne. Overhead synchronizacji przewyższał jakiekolwiek korzyści z lepszego przycinania drzewa przeszukiwania.**
+**Przewaga była tak niska (a nawet ujemna!) z dwóch powodów:**
 
-## Szczegółowa Analiza
+1. **Synchroniczne wywołania `ray.get()`** do współdzielonego aktora BoundTracker tworzyły wąskie gardło komunikacyjne
+2. **Oba testy łączyły się z klastrem** - parametr `--ct "single node"` tylko zmieniał etykietę w CSV, ale NIE zmieniał sposobu wykonania Ray!
+
+## Problem #1: Synchroniczne Wywołania (Częściowo Naprawione)
 
 ### Problem w Liczbach
 
@@ -36,19 +39,61 @@ if bound_tracker is not None:
 - Test 5: 156 zadań × ~5ms = **780ms overhead'u** (26% całkowitego czasu!)
 - Wszystkie zadania muszą czekać w kolejce do aktora
 
-### Rozwiązanie
+### Rozwiązanie #1: Usunięcie Synchronizacji
 
 Zakomentowałem synchroniczne pobieranie bound'u (linie 67-68 i 115-116 w `ray_cvrp.py`):
 
 ```python
-# If we have a bound tracker, get the current best bound before starting
-# Note: For small problems (n < 20), fetching the bound synchronously creates
-# more overhead than benefit. The actor becomes a serialization bottleneck.
-# For large problems, uncomment the code below to enable bound sharing.
+# Zakomentowane - zbyt duży overhead dla małych problemów
 # if bound_tracker is not None:
 #     current_bound = ray.get(bound_tracker.get_bound.remote())
 #     bound_value = min(bound_value, int(current_bound))
 ```
+
+**Ale to nie wystarczyło!** Użytkownik zgłosił, że nadal jest wolno.
+
+## Problem #2: Nieprawidłowa Inicjalizacja Ray (GŁÓWNY PROBLEM)
+
+### Odkrycie
+
+Plik `run_ray.py` **zawsze** używał `ray.init(address="auto")` w linii 11:
+
+```python
+ray.init(address="auto")  # ← Zawsze łączy się z klastrem!
+```
+
+**To oznacza:**
+- Test "all nodes": Łączy się z klastrem ✓
+- Test "single node": **RÓWNIEŻ łączy się z klastrem!** ✗
+
+Parametr `--ct "single node"` tylko zmieniał etykietę w CSV, ale **nie zmieniał sposobu wykonania Ray**!
+
+### Konsekwencje
+
+1. **Oba testy działały na klastrze** z różnymi wzorcami szeregowania
+2. **Porównanie było bezsensowne** - nie porównywaliśmy lokalnego z rozproszonym
+3. **Overhead klastra** był obecny w obu testach
+4. **Dlatego nadal było wolno** nawet po usunięciu synchronizacji!
+
+### Rozwiązanie #2: Prawidłowa Inicjalizacja Ray
+
+Poprawiłem `run_ray.py` aby faktycznie używać różnych trybów:
+
+```python
+# Initialize Ray based on cluster type
+if ct == "single node":
+    # Local mode: runs on single machine without cluster
+    ray.init()
+    print("Ray initialized in LOCAL mode (single node)")
+else:
+    # Cluster mode: connects to Ray cluster
+    ray.init(address="auto")
+    print("Ray initialized in CLUSTER mode (all nodes)")
+```
+
+**Teraz:**
+- `--ct "single node"`: `ray.init()` - tryb lokalny, bez klastra
+- `--ct "all nodes"`: `ray.init(address="auto")` - tryb klastra
 
 **Dlaczego to pomaga:**
 - Eliminuje serializację na aktorze
@@ -58,12 +103,31 @@ Zakomentowałem synchroniczne pobieranie bound'u (linie 67-68 i 115-116 w `ray_c
 
 ## Oczekiwane Wyniki
 
-### Po Naprawie
+### Po Obu Poprawkach
 
-- **Test 3, 4:** Z 0.74-0.75x do **~1.5-1.8x** przyspieszenia
-- **Test 5:** Z 0.80x do **~2-3x** przyspieszenia
+Teraz porównanie będzie prawidłowe:
+- **"single node"**: Faktycznie działa lokalnie (bez klastra)
+- **"all nodes"**: Działa na klastrze
 
-Teraz wszystkie testy powinny pokazywać przyspieszenie, nie spowolnienie!
+**Oczekiwane przyspieszenie:**
+- **Test 1, 2:** ~1.5-1.8x (jak wcześniej, teraz z prawidłowym porównaniem)
+- **Test 3, 4:** ~1.5-2x (bez overhead'u synchronizacji)
+- **Test 5:** ~2-3x (drobne zadania + brak synchronizacji + prawdziwy klaster)
+
+### Jak Przetestować
+
+```bash
+# Uruchom na klastrze (tryb rozproszony)
+python python/run_ray.py --n 14 --C 5 --fn test14_fixed.csv --ct "all nodes"
+
+# Uruchom lokalnie (tryb jednowęzłowy)
+python python/run_ray.py --n 14 --C 5 --fn test14_fixed.csv --ct "single node"
+
+# Teraz zobaczysz:
+# - "single node" będzie wolniejszy (ale działający lokalnie)
+# - "all nodes" będzie szybszy (z faktycznym wykorzystaniem klastra)
+# - Przyspieszenie > 1.0x dla wszystkich testów!
+```
 
 ### Dlaczego Test 5 Jest Najlepszy
 
@@ -117,11 +181,18 @@ python python/run_ray.py --n 14 --C 5 --fn test14_fixed.csv --ct "single node"
 
 **Pytanie:** Dlaczego przewaga jest tak niska?
 
-**Odpowiedź:** Ponieważ współdzielony BoundTracker ze synchronicznym `ray.get()` tworzył wąskie gardło. Dla małych problemów (n=14), overhead komunikacji przewyższał korzyści z lepszego przycinania.
+**Odpowiedź:** Z dwóch powodów:
 
-**Rozwiązanie:** Usunięto synchroniczne pobieranie bound'u. Teraz:
-- Test 1, 2: ~1.5-1.8x (jak wcześniej)
-- Test 3, 4: ~1.5-1.8x (NAPRAWIONE z 0.74-0.75x)
-- Test 5: ~2-3x (NAPRAWIONE z 0.80x)
+1. **Synchroniczne `ray.get()`** tworzył wąskie gardło (NAPRAWIONE w ray_cvrp.py)
+2. **Oba testy łączyły się z klastrem** - parametr `--ct` był tylko etykietą (NAPRAWIONE w run_ray.py)
 
-**Lekcja:** W systemach rozproszonych, prostsze rozwiązanie bez synchronizacji często działa lepiej niż złożone rozwiązanie z koordynacją.
+**Rozwiązania:**
+1. Zakomentowano synchroniczne pobieranie bound'u w `ray_cvrp.py`
+2. Poprawiono inicjalizację Ray w `run_ray.py` aby faktycznie używać różnych trybów
+
+**Teraz:**
+- `--ct "single node"`: `ray.init()` - lokalnie, bez klastra
+- `--ct "all nodes"`: `ray.init(address="auto")` - na klastrze
+- Porównanie będzie prawidłowe i pokaże faktyczne przyspieszenie!
+
+**Lekcja:** W systemach rozproszonych, upewnij się że faktycznie testujesz to co myślisz że testujesz. Parametr który tylko zmienia etykietę nie zmienia zachowania!
