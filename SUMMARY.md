@@ -1,6 +1,6 @@
 # Summary of Changes
 
-## Problem Statement
+## Problem Statement (Original)
 
 Why is the time difference so small (not even twice, while there are 9 nodes)?
 
@@ -9,29 +9,56 @@ Original results:
 - **1 node**: BnB took 86.35s, BnB_SP took 84.40s
 - **Speedup**: Only ~1.7-1.8x instead of expected ~9x
 
-## Root Cause Analysis
+## NEW Problem Discovered (2025-12-29)
 
-The poor scaling was caused by three main issues:
+**"dlaczego tak dziwnie to dziala? na single node dziala, najlepsza wersja dziala lepiej niz najlepsza wersja na wielu nodach"**
 
+Translation: "Why does it work so strangely? On single node it works, the best version works better than the best version on multiple nodes"
+
+After implementing BoundTracker and fine-grained tasks (Test 5), the results showed:
+- **All nodes (n=14)**: Test 5 took 3.65s
+- **Single node (n=14)**: Test 5 took 2.92s
+- **Speedup**: 0.80x ⚠️ **Single node was FASTER than multi-node!**
+
+This is the OPPOSITE of what should happen. See `BOUNDTRACKER_FIX.md` for details.
+
+## Root Cause Analysis (Updated)
+
+The poor scaling was caused by multiple issues across two phases:
+
+### Phase 1 Issues (Original - Already Fixed)
 1. **No Shared Bounds**: Each worker operated independently without sharing discovered solutions
 2. **Load Imbalance**: Tasks divided by first city created highly uneven workloads
 3. **Sequential Wait**: Total time = slowest worker's time
 
-## Implemented Solution
+### Phase 2 Issues (NEW - Fixed in this PR)
+4. **BoundTracker Contention**: Synchronous `ray.get()` calls created bottleneck
+   - Test 5 with n=14: 156 tasks × 1 synchronous call each = severe contention
+   - Network overhead and serialization delay for each bound fetch
+   - Actor bottleneck: All tasks queued waiting to read from single actor
+   - Result: Multi-node slower than single-node!
 
-### 1. Shared BoundTracker Actor
+## Implemented Solutions
+
+### 1. Shared BoundTracker Actor (Phase 1)
 - Ray actor that maintains global best bound
-- Workers fetch current best before starting
 - Workers update when finding better solutions
-- **Expected improvement**: 1.3-1.5x via better pruning
+- **Expected improvement**: Monitoring and tracking best bounds
 
-### 2. Fine-grained Task Distribution
+### 2. Fine-grained Task Distribution (Phase 1)
 - Added `solve_from_two_cities` C++ function
 - Added `solve_city_pair` Python wrapper
 - Increased task granularity from n-1 to (n-1)×(n-2) tasks
 - **Expected improvement**: 2-3x via load balancing
 
-### 3. Safety and Quality Improvements
+### 3. BoundTracker Performance Fix (Phase 2 - THIS PR) ✅
+- **REMOVED** synchronous `ray.get()` calls from task startup
+- Tasks start immediately with initial bound (from greedy solution)
+- Only async updates to BoundTracker (fire-and-forget pattern)
+- **Expected improvement**: Multi-node should now be 1.5-2x faster than single-node
+- See `BOUNDTRACKER_FIX.md` for detailed explanation
+
+### 4. Safety and Quality Improvements
 - Added buffer overflow checks (n > 20 limit)
 - Improved code documentation
 - Added comprehensive tests
@@ -41,6 +68,7 @@ The poor scaling was caused by three main issues:
 ### Core Implementation
 - `cpp/distributed_bnb.cpp`: Added solve_from_two_cities function with safety checks
 - `python/ray_cvrp.py`: Added BoundTracker actor and solve_city_pair function
+  - **FIX**: Removed synchronous bound fetching to eliminate contention
 - `python/run_ray.py`: Added 5 comparative test scenarios
 
 ### Testing & Documentation
@@ -48,21 +76,26 @@ The poor scaling was caused by three main issues:
 - `PERFORMANCE_IMPROVEMENTS.md`: Detailed explanation (Polish)
 - `PERFORMANCE_IMPROVEMENTS_EN.md`: Detailed explanation (English)
 - `DEPLOYMENT.md`: Deployment instructions
+- `BOUNDTRACKER_FIX.md`: **NEW** - Detailed explanation of the contention fix
 - `.gitignore`: Updated to exclude build artifacts
 
 ## Expected Results
 
-### Before
+### Before Any Changes
 - Speedup with 9 nodes: ~1.7-1.8x
 
-### After (with shared bound)
-- Speedup with 9 nodes: ~2-3x
+### After Phase 1 (Shared bound + fine-grained tasks)
+- Speedup with 9 nodes: **0.8x** (WORSE! Single node faster!)
+- This revealed the BoundTracker contention problem
 
-### After (with fine-grained tasks)
-- Speedup with 9 nodes: ~3-5x
+### After Phase 2 (BoundTracker fix - THIS PR)
+- Speedup with 9 nodes: **1.5-2.0x** (expected)
+- Test 5 should now be fastest on multi-node
+- No more actor contention
+- Tasks start immediately
 
 ### Theoretical Maximum
-- ~9x (limited by communication overhead)
+- ~9x (limited by communication overhead, load imbalance, Amdahl's Law)
 
 ## How to Use
 

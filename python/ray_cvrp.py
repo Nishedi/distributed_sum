@@ -59,14 +59,16 @@ def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):
         row = (ctypes.c_double * n)(*dist_np[i])
         c_mat[i] = row
 
-    # If we have a bound tracker, get the current best bound before starting
-    # Note: This is a synchronous call but only happens once per task at startup.
-    # The benefit of having an up-to-date bound for pruning outweighs the small
-    # communication overhead. For very frequent updates, consider batching or
-    # implementing periodic async updates during long-running computations.
-    if bound_tracker is not None:
-        current_bound = ray.get(bound_tracker.get_bound.remote())
-        bound_value = min(bound_value, int(current_bound))
+    # Note: We intentionally do NOT fetch the current bound synchronously here.
+    # In distributed settings, synchronous ray.get() calls create contention and
+    # network overhead that can make multi-node execution slower than single-node.
+    # Instead, we:
+    # 1. Start immediately with the provided bound_value (e.g., from greedy solution)
+    # 2. Update the shared bound asynchronously when we find better solutions
+    # 3. Other tasks benefit indirectly as the C++ solver naturally prunes with
+    #    better bounds found by earlier-completing tasks
+    # This approach eliminates the bottleneck of 100+ tasks all fetching from
+    # the same actor at startup, especially critical for fine-grained task distribution.
 
     # Wywołanie C++ BnB dla pierwszego miasta
     result = lib.solve_from_first_city(c_mat, n, C, city, BnB, bound_value)
@@ -108,11 +110,8 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
         row = (ctypes.c_double * n)(*dist_np[i])
         c_mat[i] = row
 
-    # If we have a bound tracker, get the current best bound before starting
-    # Note: This is a synchronous call but only happens once per task at startup.
-    if bound_tracker is not None:
-        current_bound = ray.get(bound_tracker.get_bound.remote())
-        bound_value = min(bound_value, int(current_bound))
+    # Note: We intentionally do NOT fetch the current bound synchronously here.
+    # See explanation in solve_city() for rationale.
 
     # Wywołanie C++ BnB dla pierwszych dwóch miast
     result = lib.solve_from_two_cities(c_mat, n, C, city1, city2, BnB, bound_value)
