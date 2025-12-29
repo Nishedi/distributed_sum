@@ -5,9 +5,10 @@ import ctypes
 import numpy as np
 import os
 
+
 # Ścieżka absolutna do biblioteki C++
 LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
-
+#LIB_PATH = "/home/kpempera/distributed_sum/cpp/libcvrp.so"
 
 @ray.remote
 def solve_city(dist_np, C, city):
