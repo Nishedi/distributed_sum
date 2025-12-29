@@ -8,6 +8,8 @@ import csv
 import os
 
 
+ray.init(address="auto")
+np.random.seed(42)
 parser = argparse.ArgumentParser(description="Ray CVRP BnB benchmark")
 parser.add_argument("--n", type=int, default=14, help="number of cities")
 parser.add_argument("--C", type=int, default=5, help="vehicle capacity")
@@ -18,18 +20,6 @@ args = parser.parse_args()
 n = args.n
 C = args.C
 ct = args.ct
-
-# Initialize Ray based on cluster type
-if ct == "single node":
-    # Local mode: runs on single machine without cluster
-    ray.init()
-    print("Ray initialized in LOCAL mode (single node)")
-else:
-    # Cluster mode: connects to Ray cluster
-    ray.init(address="auto")
-    print("Ray initialized in CLUSTER mode (all nodes)")
-
-np.random.seed(42)
 csv_file = args.fn
 file_exists = os.path.isfile(csv_file)
 with open(csv_file, mode="a", newline="") as f:

@@ -2,12 +2,11 @@
 
 ## Krótka Odpowiedź
 
-**Przewaga była tak niska (a nawet ujemna!) z dwóch powodów:**
+**Przewaga była tak niska (a nawet ujemna!) z powodu:**
 
-1. **Synchroniczne wywołania `ray.get()`** do współdzielonego aktora BoundTracker tworzyły wąskie gardło komunikacyjne
-2. **Oba testy łączyły się z klastrem** - parametr `--ct "single node"` tylko zmieniał etykietę w CSV, ale NIE zmieniał sposobu wykonania Ray!
+**Synchroniczne wywołania `ray.get()`** do współdzielonego aktora BoundTracker tworzyły wąskie gardło komunikacyjne. Overhead synchronizacji przewyższał korzyści z lepszego przycinania drzewa przeszukiwania.
 
-## Problem #1: Synchroniczne Wywołania (Częściowo Naprawione)
+## Problem: Synchroniczne Wywołania
 
 ### Problem w Liczbach
 
@@ -39,7 +38,7 @@ if bound_tracker is not None:
 - Test 5: 156 zadań × ~5ms = **780ms overhead'u** (26% całkowitego czasu!)
 - Wszystkie zadania muszą czekać w kolejce do aktora
 
-### Rozwiązanie #1: Usunięcie Synchronizacji
+### Rozwiązanie: Usunięcie Synchronizacji
 
 Zakomentowałem synchroniczne pobieranie bound'u (linie 67-68 i 115-116 w `ray_cvrp.py`):
 
@@ -50,50 +49,11 @@ Zakomentowałem synchroniczne pobieranie bound'u (linie 67-68 i 115-116 w `ray_c
 #     bound_value = min(bound_value, int(current_bound))
 ```
 
-**Ale to nie wystarczyło!** Użytkownik zgłosił, że nadal jest wolno.
-
-## Problem #2: Nieprawidłowa Inicjalizacja Ray (GŁÓWNY PROBLEM)
-
-### Odkrycie
-
-Plik `run_ray.py` **zawsze** używał `ray.init(address="auto")` w linii 11:
-
-```python
-ray.init(address="auto")  # ← Zawsze łączy się z klastrem!
-```
-
-**To oznacza:**
-- Test "all nodes": Łączy się z klastrem ✓
-- Test "single node": **RÓWNIEŻ łączy się z klastrem!** ✗
-
-Parametr `--ct "single node"` tylko zmieniał etykietę w CSV, ale **nie zmieniał sposobu wykonania Ray**!
-
-### Konsekwencje
-
-1. **Oba testy działały na klastrze** z różnymi wzorcami szeregowania
-2. **Porównanie było bezsensowne** - nie porównywaliśmy lokalnego z rozproszonym
-3. **Overhead klastra** był obecny w obu testach
-4. **Dlatego nadal było wolno** nawet po usunięciu synchronizacji!
-
-### Rozwiązanie #2: Prawidłowa Inicjalizacja Ray
-
-Poprawiłem `run_ray.py` aby faktycznie używać różnych trybów:
-
-```python
-# Initialize Ray based on cluster type
-if ct == "single node":
-    # Local mode: runs on single machine without cluster
-    ray.init()
-    print("Ray initialized in LOCAL mode (single node)")
-else:
-    # Cluster mode: connects to Ray cluster
-    ray.init(address="auto")
-    print("Ray initialized in CLUSTER mode (all nodes)")
-```
-
-**Teraz:**
-- `--ct "single node"`: `ray.init()` - tryb lokalny, bez klastra
-- `--ct "all nodes"`: `ray.init(address="auto")` - tryb klastra
+**Dlaczego to pomaga:**
+- Eliminuje serializację na aktorze BoundTracker
+- Usuwa ~780ms overhead'u synchronizacji (dla n=14, 156 zadań)
+- Greedy bound jest już wystarczająco dobry dla małych problemów
+- Zachowuje asynchroniczne aktualizacje (fire-and-forget) które nie szkodzą
 
 **Dlaczego to pomaga:**
 - Eliminuje serializację na aktorze
@@ -103,31 +63,30 @@ else:
 
 ## Oczekiwane Wyniki
 
-### Po Obu Poprawkach
+### Po Poprawce
 
-Teraz porównanie będzie prawidłowe:
-- **"single node"**: Faktycznie działa lokalnie (bez klastra)
-- **"all nodes"**: Działa na klastrze
+Po zakomentowaniu synchronicznych wywołań:
 
 **Oczekiwane przyspieszenie:**
-- **Test 1, 2:** ~1.5-1.8x (jak wcześniej, teraz z prawidłowym porównaniem)
-- **Test 3, 4:** ~1.5-2x (bez overhead'u synchronizacji)
-- **Test 5:** ~2-3x (drobne zadania + brak synchronizacji + prawdziwy klaster)
+- **Test 1, 2:** ~1.5-1.8x (jak wcześniej - już działały dobrze)
+- **Test 3, 4:** ~1.5-2x (NAPRAWIONE z 0.74-0.75x przez usunięcie synchronizacji)
+- **Test 5:** ~1.5-2x (NAPRAWIONE z 0.80x przez usunięcie synchronizacji)
 
 ### Jak Przetestować
 
 ```bash
-# Uruchom na klastrze (tryb rozproszony)
+# Uruchom na klastrze z wszystkimi węzłami
 python python/run_ray.py --n 14 --C 5 --fn test14_fixed.csv --ct "all nodes"
 
-# Uruchom lokalnie (tryb jednowęzłowy)
+# Uruchom na klastrze z jednym węzłem (wyłącz pozostałe)
 python python/run_ray.py --n 14 --C 5 --fn test14_fixed.csv --ct "single node"
 
-# Teraz zobaczysz:
-# - "single node" będzie wolniejszy (ale działający lokalnie)
-# - "all nodes" będzie szybszy (z faktycznym wykorzystaniem klastra)
-# - Przyspieszenie > 1.0x dla wszystkich testów!
+# Oczekiwane wyniki:
+# - Test 5 powinien pokazać przyspieszenie > 1.0x (zamiast 0.80x)
+# - "all nodes" powinny być szybsze niż "single node"
 ```
+
+**Uwaga:** Wyniki w `test14.csv` były zebrane PRZED poprawką, dlatego pokazują ujemne przyspieszenie. Nowe testy powinny pokazać poprawę.
 
 ### Dlaczego Test 5 Jest Najlepszy
 
@@ -181,18 +140,14 @@ python python/run_ray.py --n 14 --C 5 --fn test14_fixed.csv --ct "single node"
 
 **Pytanie:** Dlaczego przewaga jest tak niska?
 
-**Odpowiedź:** Z dwóch powodów:
+**Odpowiedź:** Synchroniczne `ray.get()` tworzył wąskie gardło komunikacyjne.
 
-1. **Synchroniczne `ray.get()`** tworzył wąskie gardło (NAPRAWIONE w ray_cvrp.py)
-2. **Oba testy łączyły się z klastrem** - parametr `--ct` był tylko etykietą (NAPRAWIONE w run_ray.py)
+**Rozwiązanie:** Zakomentowano synchroniczne pobieranie bound'u w `ray_cvrp.py` (linie 67-68, 115-116).
 
-**Rozwiązania:**
-1. Zakomentowano synchroniczne pobieranie bound'u w `ray_cvrp.py`
-2. Poprawiono inicjalizację Ray w `run_ray.py` aby faktycznie używać różnych trybów
+**Wyniki:**
+- Przed poprawką (test14.csv): Test 5 pokazywał 0.80x (wolniej na wielu węzłach)
+- Po poprawce: Oczekiwane ~1.5-2x przyspieszenie
 
-**Teraz:**
-- `--ct "single node"`: `ray.init()` - lokalnie, bez klastra
-- `--ct "all nodes"`: `ray.init(address="auto")` - na klastrze
-- Porównanie będzie prawidłowe i pokaże faktyczne przyspieszenie!
+**Kluczowa lekcja:** Dla małych problemów (n < 20), overhead komunikacji synchronicznej > korzyść z lepszego przycinania. Prostsze rozwiązanie bez synchronizacji działa lepiej.
 
-**Lekcja:** W systemach rozproszonych, upewnij się że faktycznie testujesz to co myślisz że testujesz. Parametr który tylko zmienia etykietę nie zmienia zachowania!
+**Następny krok:** Uruchom testy ponownie z zaktualizowanym kodem aby zweryfikować poprawę wydajności.
