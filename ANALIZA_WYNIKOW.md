@@ -46,7 +46,7 @@ if bound_tracker is not None:
 ### Matematyka Overhead'u
 
 Załóżmy:
-- Czas odpytania BoundTracker: ~5-10ms
+- Czas odpytania BoundTracker: ~5-10ms (zależy od warunków sieciowych i obciążenia klastra)
 - Liczba zadań w Test 5: 156
 - **Całkowity overhead: 156 × 5ms = 780ms = 0.78s**
 

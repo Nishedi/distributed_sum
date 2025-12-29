@@ -56,6 +56,7 @@ if bound_tracker is not None:
 - Każde `ray.get()` jest synchroniczne - blokuje wykonanie zadania
 - Aktor BoundTracker staje się wąskim gardłem
 - Dla Test 5: 156 zadań × ~5ms overhead = 780ms stracone na synchronizację!
+  - **Uwaga:** 5ms to oszacowanie; rzeczywisty overhead zależy od warunków sieciowych i obciążenia klastra
 - Dla problemu rozwiązywalnego w 3s, to jest 26% overhead'u
 - **Overhead komunikacji > korzyść z lepszego przycinania**
 
