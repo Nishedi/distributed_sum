@@ -59,7 +59,7 @@ def lower_bound(dist, visited, min_edges, last_city):
     
     # Add estimated cost to return to depot
     # (minimum distance from any unvisited city to depot)
-    if not all(visited):
+    if not all(visited[1:]):  # Check only customer cities
         min_to_depot = min(dist[i][0] for i in range(1, n) if not visited[i])
         lb += min_to_depot
     
@@ -79,7 +79,7 @@ def greedy_initial_solution(dist, capacity):
     routes = []
     total_cost = 0
     
-    while not all(visited):
+    while not all(visited[1:]):  # Continue until all customer cities are visited
         route = [0]
         current_load = 0
         current = 0

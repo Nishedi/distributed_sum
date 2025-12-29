@@ -13,28 +13,28 @@ LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
 @ray.remote
 class BestCostActor:
     """
-    Actor do współdzielenia najlepszego znalezionego kosztu między workerami.
-    Pozwala na lepsze przycinanie gałęzi w czasie rzeczywistym.
+    Actor for sharing the best found cost between workers.
+    Allows for better branch pruning in real-time.
     """
     def __init__(self):
         self.best_cost = float('inf')
     
     def update(self, cost):
-        """Aktualizuj najlepszy koszt jeśli znaleziono lepszy"""
+        """Update the best cost if a better one is found"""
         if cost < self.best_cost:
             self.best_cost = cost
             return True
         return False
     
     def get(self):
-        """Pobierz aktualny najlepszy koszt"""
+        """Get the current best cost"""
         return self.best_cost
 
 @ray.remote
 def solve_city(dist_np, C, city, BnB):
     """
-    Funkcja wywoływana przez Ray worker.
-    Konwertuje numpy array -> ctypes double** dopiero na workerze.
+    Function called by Ray worker.
+    Converts numpy array -> ctypes double** on the worker.
     """
     lib = ctypes.CDLL(LIB_PATH)
 
@@ -50,18 +50,18 @@ def solve_city(dist_np, C, city, BnB):
 
     n = dist_np.shape[0]
 
-    # Konwersja numpy -> double**
+    # Convert numpy -> double**
     c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
     for i in range(n):
         row = (ctypes.c_double * n)(*dist_np[i])
         c_mat[i] = row
 
-    # Wywołanie C++ BnB dla pierwszego miasta
+    # Call C++ BnB for the first city
     return lib.solve_from_first_city(c_mat, n, C, city, BnB)
 
 
 def run_distributed_bnb(n=12, C=5, BnB = 1):
-    # Tworzenie losowych danych
+    # Create random data
     coords = np.random.rand(n, 2) * 10000
     dist = np.zeros((n, n))
 
@@ -69,13 +69,13 @@ def run_distributed_bnb(n=12, C=5, BnB = 1):
         for j in range(n):
             dist[i, j] = np.linalg.norm(coords[i] - coords[j])
 
-    # Uruchomienie Ray cluster
+    # Start Ray cluster
     ray.init(address="auto")
 
-    # Tworzymy zadania dla każdego pierwszego miasta (oprócz startowego 0)
+    # Create tasks for each first city (except depot 0)
     futures = [solve_city.remote(dist, C, i, BnB) for i in range(1, n)]
 
-    # Pobranie wyników
+    # Get results
     results = ray.get(futures)
     best_global = min(results)
 
