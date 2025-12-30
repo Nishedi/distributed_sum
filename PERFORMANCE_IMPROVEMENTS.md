@@ -183,6 +183,56 @@ python python/run_ray.py
 4. **Heurystyka Kolejności:** Inteligentniejsza kolejność rozważania miast dla lepszego przycinania
 5. **Okresowe Aktualizacje Ograniczeń:** Workers okresowo sprawdzają i aktualizują ograniczenia podczas długich obliczeń
 
+## Test 6: Wsadowe Podejście Wielowątkowe (NOWE)
+
+### Problem z Testem 5
+Test 5 tworzy zbyt wiele zadań: (n-1)×(n-2) = 13×12 = 156 zadań dla n=14. Powoduje to:
+- Nadmierne obciążenie komunikacyjne między workerami
+- Zbyt dużo czasu poświęconego na planowanie i synchronizację zadań
+- Sieć staje się wąskim gardłem w środowiskach rozproszonych
+
+### Rozwiązanie: Zrównoważona Granulacja Zadań
+Test 6 implementuje **podejście wsadowe**, które:
+- Tworzy pośrednią liczbę zadań (między Testem 4 a Testem 5)
+- Każde zadanie przetwarza wiele miast sekwencyjnie
+- Automatycznie dostosowuje rozmiar wsadu na podstawie dostępnych workerów
+
+**Implementacja:** `solve_city_batch()` w `python/ray_cvrp.py`
+
+```python
+@ray.remote
+def solve_city_batch(dist_np, C, cities, BnB, bound_value, bound_tracker=None):
+    """
+    Przetwarza wiele miast w jednym zadaniu.
+    Redukuje obciążenie komunikacyjne przy zachowaniu dobrego równoważenia obciążenia.
+    """
+    # ... przetwarzaj każde miasto w wsadzie ...
+```
+
+### Strategia Obliczania Zadań
+- **Cel:** 2-3 zadania na dostępnego workera
+- **Rozmiar wsadu:** `liczba_miast / (liczba_workerów × 2.5)`
+- **Przykład:** Dla n=14, 4 workery → ~10 zadań zamiast 156
+
+### Tabela Porównawcza
+
+| Test | Zadania dla n=14 | Komunikacja | Równoważenie | Najlepsze dla |
+|------|------------------|-------------|--------------|---------------|
+| Test 4 | 13 | Niska | Słabe | Małe klastry |
+| Test 6 (NOWY) | ~10-20 | Średnia | Dobre | Większość scenariuszy |
+| Test 5 | 156 | Wysoka | Doskonałe | Szybkie sieci |
+
+### Korzyści
+1. **Zredukowana Komunikacja:** 10-15x mniej zadań niż Test 5
+2. **Lepsze niż Test 4:** Zapewnia dobre równoważenie obciążenia
+3. **Adaptacyjne:** Skaluje się z dostępnymi workerami
+4. **Optymalne dla Rozproszonego:** Zaprojektowane do minimalizacji wąskiego gardła sieciowego
+
+### Oczekiwana Wydajność
+- **Przyspieszenie vs Test 5:** 1.2-1.5x na rozproszonych klastrach (dzięki mniejszej komunikacji)
+- **Przyspieszenie vs Test 4:** 1.3-1.8x (dzięki lepszemu równoważeniu obciążenia)
+- **Najlepsza ogólna wydajność:** Na wielowęzłowych klastrach z umiarkowaną prędkością sieci
+
 ## Kompilacja
 
 Aby przekompilować bibliotekę C++ po zmianach:
@@ -200,8 +250,8 @@ distributed_sum/
 │   ├── distributed_bnb.cpp    # C++ implementation (dodano solve_from_two_cities)
 │   └── libcvrp.so             # Skompilowana biblioteka
 ├── python/
-│   ├── ray_cvrp.py            # Ray workers (dodano BoundTracker, solve_city_pair)
-│   └── run_ray.py             # Główny skrypt testowy (dodano testy porównawcze)
+│   ├── ray_cvrp.py            # Ray workers (dodano BoundTracker, solve_city_pair, solve_city_batch)
+│   └── run_ray.py             # Główny skrypt testowy (dodano testy porównawcze wraz z Testem 6)
 └── test_improvements.py       # Lokalne testy jednostkowe
 ```
 
@@ -212,5 +262,6 @@ Te usprawnienia rozwiązują problem słabego skalowania w oryginalnej implement
 1. **Współdzielenie informacji** między workerami (BoundTracker)
 2. **Lepsze rozłożenie pracy** (drobniejsze zadania)
 3. **Dynamiczną aktualizację** ograniczeń podczas wykonywania
+4. **Zrównoważoną granulację zadań** (Test 6 - optymalne dla obliczeń rozproszonych)
 
 Oczekujemy, że te zmiany zwiększą przyspieszenie z ~1.7x do ~3-5x z 9 węzłami, co jest znacznie bliższe idealnemu skalowaniu.

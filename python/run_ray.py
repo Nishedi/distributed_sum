@@ -1,7 +1,7 @@
 import ray
 import time
 import numpy as np
-from ray_cvrp import solve_city, solve_city_pair, BoundTracker
+from ray_cvrp import solve_city, solve_city_pair, solve_city_batch, BoundTracker
 from greedy import greedy_cvrp_1nn
 import argparse
 import csv
@@ -138,6 +138,49 @@ print()
 with open(csv_file, mode="a", newline="") as f:
     writer = csv.writer(f)
     writer.writerow([n, C, "Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY", min(results), end_time, preparing_time, computing_time, ct])
+
+# Test 6: Batched multi-threaded approach - balanced granularity
+# This approach creates fewer tasks than Test 5 but more than Test 4
+# Each task processes a batch of cities, reducing communication overhead
+# while maintaining good load balancing
+print("=== Test 6: BnB z przetwarzaniem wsadowym (zrównoważona granulacja) - OPTYMALIZACJA KOMUNIKACJI ===")
+start_time = time.time()
+bound_tracker = BoundTracker.remote(int(cost))
+
+# Calculate optimal batch size based on number of cities and available workers
+# We want enough batches to balance load, but not so many that communication dominates
+num_cities = n - 1  # excluding depot
+num_workers = ray.available_resources().get('CPU', 4)  # default to 4 if not available
+# Target: create 2-3 tasks per worker for good load balancing
+target_tasks = int(num_workers * 2.5)
+batch_size = max(1, num_cities // target_tasks)
+
+# Create batches of cities
+batches = []
+cities = list(range(1, n))
+for i in range(0, len(cities), batch_size):
+    batch = cities[i:i+batch_size]
+    batches.append(batch)
+
+# Create tasks for each batch
+futures = [solve_city_batch.remote(dist, C, batch, 1, int(cost), bound_tracker) 
+           for batch in batches]
+
+preparing_time = time.time() - start_time
+computing_start_time = time.time()
+results = ray.get(futures)
+end_time = time.time() - start_time
+computing_time = time.time() - computing_start_time
+
+print(f"Najlepszy wynik: {min(results)}")
+print(f"Czas: {end_time:.4f}s")
+print(f"Liczba zadań: {len(futures)} (batch size: {batch_size})")
+print(f"Workers: {int(num_workers)}")
+print()
+with open(csv_file, mode="a", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow([n, C, "Test 6: BnB z przetwarzaniem wsadowym (zrównoważona granulacja) - OPTYMALIZACJA KOMUNIKACJI", 
+                     min(results), end_time, preparing_time, computing_time, ct])
 
 #start_time = time.time()
 #futures = [solve_city.remote(dist, C, i, 0, 999999999) for i in range(1, n)]

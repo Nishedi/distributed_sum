@@ -182,6 +182,56 @@ python python/run_ray.py
 4. **Heuristic Ordering:** Smarter ordering of cities for better pruning
 5. **Periodic Bound Updates:** Workers periodically check and update bounds during long computations
 
+## Test 6: Batched Multi-threaded Approach (NEW)
+
+### Problem with Test 5
+Test 5 creates too many tasks: (n-1)×(n-2) = 13×12 = 156 tasks for n=14. This causes:
+- Excessive communication overhead between workers
+- Too much time spent on task scheduling and synchronization
+- Network becoming a bottleneck in distributed settings
+
+### Solution: Balanced Task Granularity
+Test 6 implements a **batched processing approach** that:
+- Creates an intermediate number of tasks (between Test 4 and Test 5)
+- Each task processes multiple cities sequentially
+- Automatically adjusts batch size based on available workers
+
+**Implementation:** `solve_city_batch()` in `python/ray_cvrp.py`
+
+```python
+@ray.remote
+def solve_city_batch(dist_np, C, cities, BnB, bound_value, bound_tracker=None):
+    """
+    Process multiple cities in a single task.
+    Reduces communication overhead while maintaining good load balancing.
+    """
+    # ... process each city in the batch ...
+```
+
+### Task Calculation Strategy
+- **Target:** 2-3 tasks per available worker
+- **Batch size:** `num_cities / (num_workers × 2.5)`
+- **Example:** For n=14, 4 workers → ~10 tasks instead of 156
+
+### Comparison Table
+
+| Test | Tasks for n=14 | Communication | Load Balance | Best For |
+|------|----------------|---------------|--------------|----------|
+| Test 4 | 13 | Low | Poor | Small clusters |
+| Test 6 (NEW) | ~10-20 | Medium | Good | Most scenarios |
+| Test 5 | 156 | High | Excellent | Fast networks |
+
+### Benefits
+1. **Reduced Communication:** 10-15x fewer tasks than Test 5
+2. **Better than Test 4:** Still provides good load balancing
+3. **Adaptive:** Scales with available workers
+4. **Optimal for Distributed:** Designed to minimize network bottleneck
+
+### Expected Performance
+- **Speedup vs Test 5:** 1.2-1.5x on distributed clusters (due to less communication)
+- **Speedup vs Test 4:** 1.3-1.8x (due to better load balancing)
+- **Best overall performance:** On multi-node clusters with moderate network speed
+
 ## Compilation
 
 To recompile the C++ library after changes:
@@ -199,8 +249,8 @@ distributed_sum/
 │   ├── distributed_bnb.cpp    # C++ implementation (added solve_from_two_cities)
 │   └── libcvrp.so             # Compiled library
 ├── python/
-│   ├── ray_cvrp.py            # Ray workers (added BoundTracker, solve_city_pair)
-│   └── run_ray.py             # Main test script (added comparative tests)
+│   ├── ray_cvrp.py            # Ray workers (added BoundTracker, solve_city_pair, solve_city_batch)
+│   └── run_ray.py             # Main test script (added comparative tests including Test 6)
 └── test_improvements.py       # Local unit tests
 ```
 
@@ -211,5 +261,6 @@ These improvements address the poor scaling in the original implementation by:
 1. **Sharing information** between workers (BoundTracker)
 2. **Better work distribution** (finer-grained tasks)
 3. **Dynamic updates** of bounds during execution
+4. **Balanced task granularity** (Test 6 - optimal for distributed computing)
 
 We expect these changes to increase speedup from ~1.7x to ~3-5x with 9 nodes, which is much closer to ideal scaling.

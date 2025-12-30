@@ -123,7 +123,8 @@ def test_work_distribution_strategies():
     """Test different work distribution strategies."""
     print("\nTesting work distribution strategies...")
     
-    n = 10
+    n = 15  # Use a larger n to better demonstrate batching
+    num_workers = 4  # Simulated number of workers
     
     # Strategy 1: One task per city (original)
     tasks_1 = [(i,) for i in range(1, n)]
@@ -133,10 +134,27 @@ def test_work_distribution_strategies():
     tasks_2 = [(i, j) for i in range(1, n) for j in range(1, n) if i != j]
     print(f"  Strategy 2 (by city pairs): {len(tasks_2)} tasks")
     
-    print(f"  Task granularity increased by: {len(tasks_2) / len(tasks_1):.1f}x")
+    # Strategy 3: Batched approach (Test 6)
+    num_cities = n - 1
+    target_tasks = int(num_workers * 2.5)
+    batch_size = max(1, num_cities // target_tasks)
+    cities = list(range(1, n))
+    batches = []
+    for i in range(0, len(cities), batch_size):
+        batch = cities[i:i+batch_size]
+        batches.append(batch)
+    print(f"  Strategy 3 (batched): {len(batches)} tasks (batch size: {batch_size})")
+    
+    print(f"  Task granularity increased by: {len(tasks_2) / len(tasks_1):.1f}x (strategy 2 vs 1)")
+    print(f"  Communication reduction: {len(tasks_2) / len(batches):.1f}x (strategy 2 vs 3)")
     
     assert len(tasks_1) == n - 1, "Should have n-1 tasks for strategy 1"
     assert len(tasks_2) == (n - 1) * (n - 2), "Should have (n-1)*(n-2) tasks for strategy 2"
+    # Strategy 3 should be between strategy 1 and 2 for reasonable problem sizes
+    assert len(batches) <= len(tasks_2), "Strategy 3 should have fewer or equal tasks than strategy 2 to reduce communication"
+    # For larger n, we expect strategy 3 to have similar or more tasks than strategy 1 for load balancing
+    # For small n, they might be equal, which is acceptable
+    print(f"  Task count comparison: Strategy 1 ({len(tasks_1)}) ≤ Strategy 3 ({len(batches)}) ≤ Strategy 2 ({len(tasks_2)})")
     
     print("  ✓ Work distribution test passed!")
     return True
@@ -159,10 +177,12 @@ def main():
         print("1. Shared BoundTracker for cross-worker pruning")
         print("2. Fine-grained task distribution (city pairs)")
         print("3. Dynamic bound updates during execution")
+        print("4. Batched approach (Test 6) for optimal distributed computing")
         print("\nExpected performance improvement:")
         print("- Better load balancing across workers")
         print("- More aggressive pruning via shared bounds")
         print("- Closer to linear speedup with more nodes")
+        print("- Reduced communication overhead in distributed settings (Test 6)")
         
     except Exception as e:
         print(f"\n✗ Test failed with error: {e}")

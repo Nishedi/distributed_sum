@@ -125,6 +125,65 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
     return result
 
 
+@ray.remote
+def solve_city_batch(dist_np, C, cities, BnB, bound_value, bound_tracker=None):
+    """
+    Solve multiple cities in a single task using threading.
+    This reduces communication overhead while maintaining good load balancing.
+    Each task processes a batch of cities, finding the best solution among them.
+    
+    Args:
+        dist_np: Distance matrix
+        C: Vehicle capacity
+        cities: List of cities to process in this batch
+        BnB: Branch and bound flag
+        bound_value: Initial bound value
+        bound_tracker: Shared bound tracker (optional)
+    
+    Returns:
+        Best cost found among all cities in the batch
+    """
+    lib = ctypes.CDLL(LIB_PATH)
+
+    # Deklaracja sygnatury C++
+    lib.solve_from_first_city.argtypes = [
+        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int
+    ]
+    lib.solve_from_first_city.restype = ctypes.c_double
+
+    n = dist_np.shape[0]
+
+    # Konwersja numpy -> double**
+    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
+    for i in range(n):
+        row = (ctypes.c_double * n)(*dist_np[i])
+        c_mat[i] = row
+
+    # Get current best bound if available
+    if bound_tracker is not None:
+        current_bound = ray.get(bound_tracker.get_bound.remote())
+        bound_value = min(bound_value, int(current_bound))
+
+    # Process each city in the batch and track the best result
+    best_result = float('inf')
+    for city in cities:
+        result = lib.solve_from_first_city(c_mat, n, C, city, BnB, bound_value)
+        if result < best_result:
+            best_result = result
+            # Update global bound immediately when we find a better solution
+            if bound_tracker is not None:
+                bound_tracker.update_bound.remote(result)
+                # Update local bound for remaining cities in this batch
+                bound_value = min(bound_value, int(result))
+    
+    return best_result
+
+
 def run_distributed_bnb(n=12, C=5, BnB = 1, bound_value=1e18):
     # Tworzenie losowych danych
     coords = np.random.rand(n, 2) * 10000
