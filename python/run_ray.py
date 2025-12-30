@@ -7,6 +7,9 @@ import argparse
 import csv
 import os
 
+# Configuration constant for batch sizing
+# This determines how many tasks to create per worker for optimal load balancing
+TASKS_PER_WORKER = 2.5
 
 ray.init(address="auto")
 np.random.seed(42)
@@ -151,8 +154,8 @@ bound_tracker = BoundTracker.remote(int(cost))
 # We want enough batches to balance load, but not so many that communication dominates
 num_cities = n - 1  # excluding depot
 num_workers = ray.available_resources().get('CPU', 4)  # default to 4 if not available
-# Target: create 2-3 tasks per worker for good load balancing
-target_tasks = int(num_workers * 2.5)
+# Target: create TASKS_PER_WORKER tasks per worker for good load balancing
+target_tasks = int(num_workers * TASKS_PER_WORKER)
 batch_size = max(1, num_cities // target_tasks)
 
 # Create batches of cities

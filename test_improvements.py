@@ -7,6 +7,9 @@ This simulates the distributed environment locally.
 import numpy as np
 import time
 
+# Configuration constant for batch sizing (same as in run_ray.py)
+TASKS_PER_WORKER = 2.5
+
 # Mock data generation (same as in the main code)
 def greedy_cvrp_1nn(dist, C=5):
     n = dist.shape[0]
@@ -136,7 +139,7 @@ def test_work_distribution_strategies():
     
     # Strategy 3: Batched approach (Test 6)
     num_cities = n - 1
-    target_tasks = int(num_workers * 2.5)
+    target_tasks = int(num_workers * TASKS_PER_WORKER)
     batch_size = max(1, num_cities // target_tasks)
     cities = list(range(1, n))
     batches = []

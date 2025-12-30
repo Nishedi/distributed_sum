@@ -128,7 +128,7 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
 @ray.remote
 def solve_city_batch(dist_np, C, cities, BnB, bound_value, bound_tracker=None):
     """
-    Solve multiple cities in a single task using threading.
+    Solve multiple cities in a single task using sequential processing within batches.
     This reduces communication overhead while maintaining good load balancing.
     Each task processes a batch of cities, finding the best solution among them.
     
