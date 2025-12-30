@@ -8,8 +8,9 @@ import ctypes
 import numpy as np
 import os
 
-# Path to the compiled library
-LIB_PATH = "/home/runner/work/distributed_sum/distributed_sum/cpp/libcvrp.so"
+# Path to the compiled library - use relative path from script location
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+LIB_PATH = os.path.join(SCRIPT_DIR, "cpp", "libcvrp.so")
 
 def test_parallel_solver():
     """Test that the parallel solver function can be called and works correctly."""

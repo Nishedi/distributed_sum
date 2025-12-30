@@ -15,12 +15,16 @@ parser.add_argument("--n", type=int, default=14, help="number of cities")
 parser.add_argument("--C", type=int, default=5, help="vehicle capacity")
 parser.add_argument("--fn", type=str, default="results.csv", help="file name")
 parser.add_argument("--ct", type=str, default="all nodes", help="single node or all nodes")
+parser.add_argument("--threads-coarse", type=int, default=4, help="threads per task for coarse-grained (Test 6)")
+parser.add_argument("--threads-fine", type=int, default=2, help="threads per task for fine-grained (Test 7)")
 args = parser.parse_args()
 
 n = args.n
 C = args.C
 ct = args.ct
 csv_file = args.fn
+threads_coarse = args.threads_coarse
+threads_fine = args.threads_fine
 file_exists = os.path.isfile(csv_file)
 with open(csv_file, mode="a", newline="") as f:
     writer = csv.writer(f)
@@ -145,7 +149,7 @@ start_time = time.time()
 bound_tracker = BoundTracker.remote(int(cost))
 # Each Ray worker uses multiple threads (OpenMP) for internal parallelism
 # This combines cluster-level and thread-level parallelism
-futures = [solve_city_parallel.remote(dist, C, i, 1, int(cost), bound_tracker, num_threads=4) 
+futures = [solve_city_parallel.remote(dist, C, i, 1, int(cost), bound_tracker, num_threads=threads_coarse) 
            for i in range(1, n)]
 preparing_time = time.time()-start_time
 computing_start_time = time.time()
@@ -156,7 +160,7 @@ computing_time=time.time()-computing_start_time
 print(f"Najlepszy wynik: {min(results)}")
 print(f"Czas: {end_time:.4f}s")
 print(f"Liczba zadań Ray: {len(futures)}")
-print(f"Wątki na zadanie: 4")
+print(f"Wątki na zadanie: {threads_coarse}")
 print()
 with open(csv_file, mode="a", newline="") as f:
     writer = csv.writer(f)
@@ -167,8 +171,8 @@ print("=== Test 7: Hybrydowy BnB z drobnymi zadaniami i wielowątkowym przetwarz
 start_time = time.time()
 bound_tracker = BoundTracker.remote(int(cost))
 # Combines fine-grained task distribution with per-worker multithreading
-# Uses fewer threads per task since there are more tasks
-futures = [solve_city_pair_parallel.remote(dist, C, i, j, 1, int(cost), bound_tracker, num_threads=2) 
+# Uses configurable threads per task (default: 2)
+futures = [solve_city_pair_parallel.remote(dist, C, i, j, 1, int(cost), bound_tracker, num_threads=threads_fine) 
            for i in range(1, n) for j in range(1, n) if i != j]
 preparing_time = time.time()-start_time
 computing_start_time = time.time()
@@ -179,7 +183,7 @@ computing_time=time.time()-computing_start_time
 print(f"Najlepszy wynik: {min(results)}")
 print(f"Czas: {end_time:.4f}s")
 print(f"Liczba zadań Ray: {len(futures)}")
-print(f"Wątki na zadanie: 2")
+print(f"Wątki na zadanie: {threads_fine}")
 print()
 with open(csv_file, mode="a", newline="") as f:
     writer = csv.writer(f)

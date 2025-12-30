@@ -4,6 +4,7 @@
 #include <ctime>
 #include <vector>
 #include <algorithm>
+#include <atomic>
 #include <omp.h>
 
 using namespace std;
@@ -226,7 +227,9 @@ extern "C" {
         }
         omp_set_num_threads(num_threads);
         
-        // Shared best cost with atomic updates for thread safety
+        // Shared best cost with atomic operations for thread safety
+        // Using a simple double with critical sections for updates
+        // (atomic<double> has limited support in older C++ standards)
         double global_best = bound_value;
         
         // Generate work items: all possible next cities from the initial route
@@ -247,7 +250,13 @@ extern "C" {
         // Process next cities in parallel using OpenMP
         #pragma omp parallel
         {
-            double thread_best = global_best;
+            // Read initial global_best inside parallel region for thread safety
+            double thread_best;
+            #pragma omp critical(read_global_best)
+            {
+                thread_best = global_best;
+            }
+            
             CVRP_BnB solver(dist, n, C, bound_value);
             
             #pragma omp for schedule(dynamic, 1)
@@ -255,6 +264,8 @@ extern "C" {
                 int next_city = next_cities[idx];
                 
                 // Create local copies for this thread
+                // Note: Using manual allocation since vector<bool> is specialized
+                // and doesn't support data(). The allocation is small and loop-local.
                 bool* visited = new bool[n];
                 for (int i = 0; i < n; i++) visited[i] = false;
                 visited[0] = true;
@@ -290,7 +301,7 @@ extern "C" {
                     current_load++;
                     
                     // Update solver with current best from any thread
-                    #pragma omp critical
+                    #pragma omp critical(update_solver_bound)
                     {
                         if (global_best < solver.best_cost) {
                             solver.best_cost = global_best;
@@ -309,7 +320,7 @@ extern "C" {
                     // Update global best if this thread found better solution
                     if (solver.best_cost < thread_best) {
                         thread_best = solver.best_cost;
-                        #pragma omp critical
+                        #pragma omp critical(update_global_best)
                         {
                             if (thread_best < global_best) {
                                 global_best = thread_best;
@@ -318,6 +329,7 @@ extern "C" {
                     }
                 }
                 
+                // Clean up memory
                 delete[] visited;
             }
         }
