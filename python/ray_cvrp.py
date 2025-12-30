@@ -125,6 +125,124 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
     return result
 
 
+@ray.remote
+def solve_city_parallel(dist_np, C, city, BnB, bound_value, bound_tracker=None, num_threads=4):
+    """
+    Hybrid parallel solver: combines cluster-level (Ray) and thread-level (OpenMP) parallelism.
+    Each Ray worker uses multiple threads to process sub-tasks in parallel.
+    This approach is optimal for multithread+cluster environments.
+    
+    Args:
+        dist_np: Distance matrix
+        C: Vehicle capacity
+        city: First city to visit after depot
+        BnB: Enable branch and bound (1) or brute force (0)
+        bound_value: Initial upper bound
+        bound_tracker: Optional shared bound tracker
+        num_threads: Number of threads per worker (default: 4)
+    """
+    lib = ctypes.CDLL(LIB_PATH)
+    
+    # Declare the parallel solver function signature
+    lib.solve_parallel_hybrid.argtypes = [
+        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.POINTER(ctypes.c_int),
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int
+    ]
+    lib.solve_parallel_hybrid.restype = ctypes.c_double
+    
+    n = dist_np.shape[0]
+    
+    # Convert numpy -> double**
+    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
+    for i in range(n):
+        row = (ctypes.c_double * n)(*dist_np[i])
+        c_mat[i] = row
+    
+    # Get current best bound if tracker is available
+    if bound_tracker is not None:
+        current_bound = ray.get(bound_tracker.get_bound.remote())
+        bound_value = min(bound_value, int(current_bound))
+    
+    # Setup initial route: [city]
+    initial_cities = (ctypes.c_int * 1)(city)
+    
+    # Call parallel solver
+    result = lib.solve_parallel_hybrid(
+        c_mat, n, C, initial_cities, 1, BnB, bound_value, num_threads
+    )
+    
+    # Update the global bound if we found a better solution
+    if bound_tracker is not None and result < float('inf'):
+        bound_tracker.update_bound.remote(result)
+    
+    return result
+
+
+@ray.remote
+def solve_city_pair_parallel(dist_np, C, city1, city2, BnB, bound_value, 
+                              bound_tracker=None, num_threads=4):
+    """
+    Hybrid parallel solver for city pairs: combines cluster and thread-level parallelism.
+    Provides fine-grained task distribution with multithread execution.
+    
+    Args:
+        dist_np: Distance matrix
+        C: Vehicle capacity
+        city1, city2: First two cities after depot
+        BnB: Enable branch and bound (1) or brute force (0)
+        bound_value: Initial upper bound
+        bound_tracker: Optional shared bound tracker
+        num_threads: Number of threads per worker (default: 4)
+    """
+    lib = ctypes.CDLL(LIB_PATH)
+    
+    # Declare the parallel solver function signature
+    lib.solve_parallel_hybrid.argtypes = [
+        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.POINTER(ctypes.c_int),
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int
+    ]
+    lib.solve_parallel_hybrid.restype = ctypes.c_double
+    
+    n = dist_np.shape[0]
+    
+    # Convert numpy -> double**
+    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
+    for i in range(n):
+        row = (ctypes.c_double * n)(*dist_np[i])
+        c_mat[i] = row
+    
+    # Get current best bound if tracker is available
+    if bound_tracker is not None:
+        current_bound = ray.get(bound_tracker.get_bound.remote())
+        bound_value = min(bound_value, int(current_bound))
+    
+    # Setup initial route: [city1, city2]
+    initial_cities = (ctypes.c_int * 2)(city1, city2)
+    
+    # Call parallel solver
+    result = lib.solve_parallel_hybrid(
+        c_mat, n, C, initial_cities, 2, BnB, bound_value, num_threads
+    )
+    
+    # Update the global bound if we found a better solution
+    if bound_tracker is not None and result < float('inf'):
+        bound_tracker.update_bound.remote(result)
+    
+    return result
+
+
 def run_distributed_bnb(n=12, C=5, BnB = 1, bound_value=1e18):
     # Tworzenie losowych danych
     coords = np.random.rand(n, 2) * 10000

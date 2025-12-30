@@ -1,7 +1,7 @@
 import ray
 import time
 import numpy as np
-from ray_cvrp import solve_city, solve_city_pair, BoundTracker
+from ray_cvrp import solve_city, solve_city_pair, solve_city_parallel, solve_city_pair_parallel, BoundTracker
 from greedy import greedy_cvrp_1nn
 import argparse
 import csv
@@ -138,6 +138,52 @@ print()
 with open(csv_file, mode="a", newline="") as f:
     writer = csv.writer(f)
     writer.writerow([n, C, "Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY", min(results), end_time, preparing_time, computing_time, ct])
+
+# Test 6: Hybrid parallel approach with multithread per worker (NEW BEST)
+print("=== Test 6: Hybrydowy BnB z wielowątkowym przetwarzaniem (MULTITHREAD+CLUSTER) ===")
+start_time = time.time()
+bound_tracker = BoundTracker.remote(int(cost))
+# Each Ray worker uses multiple threads (OpenMP) for internal parallelism
+# This combines cluster-level and thread-level parallelism
+futures = [solve_city_parallel.remote(dist, C, i, 1, int(cost), bound_tracker, num_threads=4) 
+           for i in range(1, n)]
+preparing_time = time.time()-start_time
+computing_start_time = time.time()
+results = ray.get(futures)
+end_time = time.time()-start_time
+computing_time=time.time()-computing_start_time
+
+print(f"Najlepszy wynik: {min(results)}")
+print(f"Czas: {end_time:.4f}s")
+print(f"Liczba zadań Ray: {len(futures)}")
+print(f"Wątki na zadanie: 4")
+print()
+with open(csv_file, mode="a", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow([n, C, "Test 6: Hybrydowy BnB z wielowątkowym przetwarzaniem (MULTITHREAD+CLUSTER)", min(results), end_time, preparing_time, computing_time, ct])
+
+# Test 7: Fine-grained parallel tasks (city pairs with multithread) (ULTIMATE PERFORMANCE)
+print("=== Test 7: Hybrydowy BnB z drobnymi zadaniami i wielowątkowym przetwarzaniem (ULTIMATE) ===")
+start_time = time.time()
+bound_tracker = BoundTracker.remote(int(cost))
+# Combines fine-grained task distribution with per-worker multithreading
+# Uses fewer threads per task since there are more tasks
+futures = [solve_city_pair_parallel.remote(dist, C, i, j, 1, int(cost), bound_tracker, num_threads=2) 
+           for i in range(1, n) for j in range(1, n) if i != j]
+preparing_time = time.time()-start_time
+computing_start_time = time.time()
+results = ray.get(futures)
+end_time = time.time()-start_time
+computing_time=time.time()-computing_start_time
+
+print(f"Najlepszy wynik: {min(results)}")
+print(f"Czas: {end_time:.4f}s")
+print(f"Liczba zadań Ray: {len(futures)}")
+print(f"Wątki na zadanie: 2")
+print()
+with open(csv_file, mode="a", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow([n, C, "Test 7: Hybrydowy BnB z drobnymi zadaniami i wielowątkowym przetwarzaniem (ULTIMATE)", min(results), end_time, preparing_time, computing_time, ct])
 
 #start_time = time.time()
 #futures = [solve_city.remote(dist, C, i, 0, 999999999) for i in range(1, n)]
