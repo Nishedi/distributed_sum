@@ -7,6 +7,15 @@ import argparse
 import csv
 import os
 
+# Constants for Test 6 hybrid approach
+# Minimum pairs per batch - ensures each task has meaningful work for multithread benefits
+MIN_PAIRS_PER_BATCH = 4
+# Target number of batches - provides good load balancing across typical cluster sizes (4-16 nodes)
+TARGET_BATCH_COUNT = 40
+
+# Test descriptions
+TEST6_DESCRIPTION = "Test 6: Hybrydowe podejście z grupowaniem zadań (DISTRIBUTED + MULTITHREAD)"
+
 
 ray.init(address="auto")
 np.random.seed(42)
@@ -140,17 +149,13 @@ with open(csv_file, mode="a", newline="") as f:
     writer.writerow([n, C, "Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY", min(results), end_time, preparing_time, computing_time, ct])
 
 # Test 6: Hybrid batched approach (BEST FOR DISTRIBUTED + MULTITHREAD)
-print("=== Test 6: Hybrydowe podejście z grupowaniem zadań (DISTRIBUTED + MULTITHREAD) ===")
+print(f"=== {TEST6_DESCRIPTION} ===")
 start_time = time.time()
 bound_tracker = BoundTracker.remote(int(cost))
 
 # Create batches of city pairs for optimal distributed+multithread execution
-# We want enough tasks for distribution but not so many that overhead dominates
-# Rule of thumb: batch_size should be proportional to work per pair
-# For n=16, we have (n-1)*(n-2) = 15*14 = 210 pairs
-# Let's create batches that will give us ~30-50 tasks total for good distribution
 all_pairs = [(i, j) for i in range(1, n) for j in range(1, n) if i != j]
-batch_size = max(4, len(all_pairs) // 40)  # Target ~40 batches for good load balancing
+batch_size = max(MIN_PAIRS_PER_BATCH, len(all_pairs) // TARGET_BATCH_COUNT)
 
 # Create batches
 batches = []
@@ -172,7 +177,7 @@ print(f"Całkowita liczba par: {len(all_pairs)}")
 print()
 with open(csv_file, mode="a", newline="") as f:
     writer = csv.writer(f)
-    writer.writerow([n, C, "Test 6: Hybrydowe podejście z grupowaniem zadań (DISTRIBUTED + MULTITHREAD)", min(results), end_time, preparing_time, computing_time, ct])
+    writer.writerow([n, C, TEST6_DESCRIPTION, min(results), end_time, preparing_time, computing_time, ct])
 
 #start_time = time.time()
 #futures = [solve_city.remote(dist, C, i, 0, 999999999) for i in range(1, n)]

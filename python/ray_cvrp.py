@@ -32,6 +32,25 @@ class BoundTracker:
         return self.best_bound
 
 
+
+def _convert_numpy_to_c_matrix(dist_np):
+    """
+    Convert numpy distance matrix to C double** for ctypes.
+    
+    Args:
+        dist_np: Numpy array (n x n)
+        
+    Returns:
+        C-compatible double** matrix
+    """
+    n = dist_np.shape[0]
+    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
+    for i in range(n):
+        row = (ctypes.c_double * n)(*dist_np[i])
+        c_mat[i] = row
+    return c_mat
+
+
 @ray.remote
 def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):
     """
@@ -53,11 +72,8 @@ def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):
 
     n = dist_np.shape[0]
 
-    # Konwersja numpy -> double**
-    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
-    for i in range(n):
-        row = (ctypes.c_double * n)(*dist_np[i])
-        c_mat[i] = row
+    # Convert numpy -> double** using helper function
+    c_mat = _convert_numpy_to_c_matrix(dist_np)
 
     # If we have a bound tracker, get the current best bound before starting
     # Note: This is a synchronous call but only happens once per task at startup.
@@ -102,11 +118,8 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
 
     n = dist_np.shape[0]
 
-    # Konwersja numpy -> double**
-    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
-    for i in range(n):
-        row = (ctypes.c_double * n)(*dist_np[i])
-        c_mat[i] = row
+    # Convert numpy -> double** using helper function
+    c_mat = _convert_numpy_to_c_matrix(dist_np)
 
     # If we have a bound tracker, get the current best bound before starting
     # Note: This is a synchronous call but only happens once per task at startup.
@@ -132,7 +145,15 @@ def solve_city_pairs_batch(dist_np, C, city_pairs, BnB, bound_value, bound_track
     This hybrid approach balances distributed and multithread execution.
     
     Args:
+        dist_np: Numpy distance matrix (n x n)
+        C: Vehicle capacity
         city_pairs: List of tuples [(city1, city2), ...] to solve
+        BnB: Branch and bound flag (1 for enabled, 0 for disabled)
+        bound_value: Initial upper bound for pruning
+        bound_tracker: Optional BoundTracker actor for shared bounds
+        
+    Returns:
+        Best cost found across all city pairs in the batch
     """
     lib = ctypes.CDLL(LIB_PATH)
 
@@ -150,11 +171,8 @@ def solve_city_pairs_batch(dist_np, C, city_pairs, BnB, bound_value, bound_track
 
     n = dist_np.shape[0]
 
-    # Konwersja numpy -> double**
-    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
-    for i in range(n):
-        row = (ctypes.c_double * n)(*dist_np[i])
-        c_mat[i] = row
+    # Convert numpy -> double** using helper function
+    c_mat = _convert_numpy_to_c_matrix(dist_np)
 
     # Get current bound once for the entire batch
     if bound_tracker is not None:
