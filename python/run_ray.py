@@ -1,7 +1,7 @@
 import ray
 import time
 import numpy as np
-from ray_cvrp import solve_city, solve_city_pair, BoundTracker
+from ray_cvrp import solve_city, solve_city_pair, solve_city_pairs_batch, BoundTracker
 from greedy import greedy_cvrp_1nn
 import argparse
 import csv
@@ -138,6 +138,41 @@ print()
 with open(csv_file, mode="a", newline="") as f:
     writer = csv.writer(f)
     writer.writerow([n, C, "Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY", min(results), end_time, preparing_time, computing_time, ct])
+
+# Test 6: Hybrid batched approach (BEST FOR DISTRIBUTED + MULTITHREAD)
+print("=== Test 6: Hybrydowe podejście z grupowaniem zadań (DISTRIBUTED + MULTITHREAD) ===")
+start_time = time.time()
+bound_tracker = BoundTracker.remote(int(cost))
+
+# Create batches of city pairs for optimal distributed+multithread execution
+# We want enough tasks for distribution but not so many that overhead dominates
+# Rule of thumb: batch_size should be proportional to work per pair
+# For n=16, we have (n-1)*(n-2) = 15*14 = 210 pairs
+# Let's create batches that will give us ~30-50 tasks total for good distribution
+all_pairs = [(i, j) for i in range(1, n) for j in range(1, n) if i != j]
+batch_size = max(4, len(all_pairs) // 40)  # Target ~40 batches for good load balancing
+
+# Create batches
+batches = []
+for i in range(0, len(all_pairs), batch_size):
+    batches.append(all_pairs[i:i+batch_size])
+
+futures = [solve_city_pairs_batch.remote(dist, C, batch, 1, int(cost), bound_tracker) 
+           for batch in batches]
+preparing_time = time.time()-start_time
+computing_start_time = time.time()
+results = ray.get(futures)
+end_time = time.time()-start_time
+computing_time=time.time()-computing_start_time
+
+print(f"Najlepszy wynik: {min(results)}")
+print(f"Czas: {end_time:.4f}s")
+print(f"Liczba zadań: {len(futures)} (po {batch_size} par miast każde)")
+print(f"Całkowita liczba par: {len(all_pairs)}")
+print()
+with open(csv_file, mode="a", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow([n, C, "Test 6: Hybrydowe podejście z grupowaniem zadań (DISTRIBUTED + MULTITHREAD)", min(results), end_time, preparing_time, computing_time, ct])
 
 #start_time = time.time()
 #futures = [solve_city.remote(dist, C, i, 0, 999999999) for i in range(1, n)]
