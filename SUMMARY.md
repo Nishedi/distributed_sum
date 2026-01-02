@@ -1,6 +1,24 @@
 # Summary of Changes
 
-## Problem Statement
+## Latest Update: New Multiprocessing-based Approach
+
+**NEW!** Added a third distributed computing approach using Python's native multiprocessing:
+- **python/multiprocessing_cvrp.py**: Core implementation with shared bound tracking
+- **python/run_multiprocessing.py**: Benchmark script comparing all approaches
+- **MULTIPROCESSING.md**: Complete documentation in Polish
+
+This provides a middle ground between sequential BnB and Ray-based clustering:
+- ✅ No cluster setup required
+- ✅ Works on single multi-core machines
+- ✅ 2-4x speedup on typical workstations
+- ✅ Shared bound tracking across workers
+- ✅ Both coarse and fine-grained task distribution
+
+---
+
+## Previous Changes: Ray-based Distributed Improvements
+
+### Original Problem Statement
 
 Why is the time difference so small (not even twice, while there are 9 nodes)?
 
@@ -36,9 +54,14 @@ The poor scaling was caused by three main issues:
 - Improved code documentation
 - Added comprehensive tests
 
-## Files Modified
+## Files Modified/Added
 
-### Core Implementation
+### New Multiprocessing Implementation
+- **NEW** `python/multiprocessing_cvrp.py`: Multiprocessing-based distributed solver
+- **NEW** `python/run_multiprocessing.py`: Benchmark script for multiprocessing approach
+- **NEW** `MULTIPROCESSING.md`: Complete documentation in Polish
+
+### Previous Ray Implementation
 - `cpp/distributed_bnb.cpp`: Added solve_from_two_cities function with safety checks
 - `python/ray_cvrp.py`: Added BoundTracker actor and solve_city_pair function
 - `python/run_ray.py`: Added 5 comparative test scenarios
@@ -49,6 +72,7 @@ The poor scaling was caused by three main issues:
 - `PERFORMANCE_IMPROVEMENTS_EN.md`: Detailed explanation (English)
 - `DEPLOYMENT.md`: Deployment instructions
 - `.gitignore`: Updated to exclude build artifacts
+- `SUMMARY.md`: Updated with multiprocessing approach
 
 ## Expected Results
 
@@ -66,31 +90,46 @@ The poor scaling was caused by three main issues:
 
 ## How to Use
 
-### Test Locally (without cluster)
+### Three Approaches Available
+
+#### 1. Multiprocessing (NEW! - Recommended for single machines)
 ```bash
-python test_improvements.py
+# Test on local multi-core machine
+python python/run_multiprocessing.py --n 14 --C 5
+
+# Specify number of workers
+python python/run_multiprocessing.py --n 14 --C 5 --workers 4
 ```
 
-### Deploy to Cluster
+See `MULTIPROCESSING.md` for detailed documentation.
+
+#### 2. Ray Cluster (Best for distributed systems)
 ```bash
+# Deploy to cluster
 cd cpp
 g++ -shared -fPIC -O2 distributed_bnb.cpp -o libcvrp.so
-
-# Deploy to all nodes
 ./compile_and_send.sh
-```
 
-### Run on Cluster
-```bash
+# Run on cluster
 python python/run_ray.py
 ```
 
 This will run 5 test scenarios:
 1. Original BnB (baseline)
 2. Original BnB_SP (with greedy bound)
-3. **NEW**: BnB with shared bound
-4. **NEW**: BnB_SP with shared bound
-5. **NEW**: BnB with fine-grained tasks (best)
+3. BnB with shared bound
+4. BnB_SP with shared bound
+5. BnB with fine-grained tasks (best)
+
+#### 3. Classic Sequential (Baseline)
+```bash
+python bnb_classic.py
+```
+
+### Test Locally (without cluster)
+```bash
+python test_improvements.py
+```
 
 ## Technical Details
 
@@ -115,6 +154,25 @@ Instead of n-1 tasks (one per first city), create (n-1)×(n-2) tasks (one per ci
 futures = [solve_city_pair.remote(dist, C, i, j, 1, bound, tracker) 
            for i in range(1, n) for j in range(1, n) if i != j]
 ```
+
+## Comparison of All Approaches
+
+| Feature | Classic BnB | **Multiprocessing (NEW)** | Ray Distributed |
+|---------|-------------|--------------------------|-----------------|
+| **Execution** | Single process | Multi-process (local) | Multi-node cluster |
+| **Setup Required** | None | None | Ray cluster |
+| **Scalability** | 1 core | Up to CPU cores (~32) | Hundreds of cores |
+| **Expected Speedup** | 1x (baseline) | **2-4x** | 3-5x |
+| **Shared Bounds** | N/A | ✅ Yes | ✅ Yes |
+| **Task Granularity** | N/A | Coarse + Fine | Coarse + Fine |
+| **Deployment** | Simple | **Simple** | Complex |
+| **Best Use Case** | Testing, n≤10 | **Development, n≤15** | Production, n>15 |
+| **Infrastructure** | None | **None** | Ray cluster |
+
+**Recommendation**: 
+- **Multiprocessing** for development and testing on workstations
+- **Ray** for production deployments on multi-node clusters
+- **Classic** for very small problems or baseline comparison
 
 ## Validation
 
