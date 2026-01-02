@@ -1,0 +1,4 @@
+n,C,method,best_cost,time_sec,workers,cluster_type
+10,5,MP Test 1: BnB bez początkowego ograniczenia (pojedyncze miasta),24807.0,0.03831291198730469,4,multiprocessing
+10,5,MP Test 2: BnB z ograniczeniem z greedy (pojedyncze miasta),26961.0,0.04006457328796387,4,multiprocessing
+10,5,MP Test 3: BnB z ograniczeniem z greedy (pary miast),23391.0,0.05000424385070801,4,multiprocessing
