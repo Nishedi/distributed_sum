@@ -9,22 +9,27 @@ from multiprocessing import Manager, Pool, cpu_count
 # Ścieżka absolutna do biblioteki C++
 # Try multiple paths for compatibility with different environments
 import os
-LIB_PATH_OPTIONS = [
-    "/home/cluster/distributed_sum/cpp/libcvrp.so",
-    "/home/runner/work/distributed_sum/distributed_sum/cpp/libcvrp.so",
-    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cpp", "libcvrp.so")
-]
 
-# Find the first path that exists
-LIB_PATH = None
-for path in LIB_PATH_OPTIONS:
-    if os.path.exists(path):
-        LIB_PATH = path
-        break
+# Check environment variable first
+if 'CVRP_LIB_PATH' in os.environ:
+    LIB_PATH = os.environ['CVRP_LIB_PATH']
+else:
+    LIB_PATH_OPTIONS = [
+        "/home/cluster/distributed_sum/cpp/libcvrp.so",
+        "/home/runner/work/distributed_sum/distributed_sum/cpp/libcvrp.so",
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cpp", "libcvrp.so")
+    ]
 
-if LIB_PATH is None:
-    # Default to the relative path if none exist
-    LIB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cpp", "libcvrp.so")
+    # Find the first path that exists
+    LIB_PATH = None
+    for path in LIB_PATH_OPTIONS:
+        if os.path.exists(path):
+            LIB_PATH = path
+            break
+
+    if LIB_PATH is None:
+        # Default to the relative path if none exist
+        LIB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cpp", "libcvrp.so")
 
 
 def init_worker(shared_bound, lock):
@@ -45,7 +50,8 @@ def solve_city_mp(args):
     try:
         lib = ctypes.CDLL(LIB_PATH)
     except OSError as e:
-        print(f"Error loading library: {e}")
+        print(f"Error loading library from {LIB_PATH}: {e}")
+        print(f"Please ensure the C++ library is compiled and the path is correct.")
         return float('inf')
 
     # Deklaracja sygnatury C++
@@ -93,7 +99,8 @@ def solve_city_pair_mp(args):
     try:
         lib = ctypes.CDLL(LIB_PATH)
     except OSError as e:
-        print(f"Error loading library: {e}")
+        print(f"Error loading library from {LIB_PATH}: {e}")
+        print(f"Please ensure the C++ library is compiled and the path is correct.")
         return float('inf')
 
     # Deklaracja sygnatury dla funkcji rozwiązującej z dwoma pierwszymi miastami
@@ -180,7 +187,17 @@ def run_distributed_bnb_mp(n=12, C=5, BnB=1, bound_value=1e18, use_pairs=False, 
               initargs=(shared_bound, lock)) as pool:
         results = pool.map(worker_func, tasks)
     
-    best_global = min(results) if results else float('inf')
+    # Filter out infinity results and check if we got valid results
+    valid_results = [r for r in results if r < float('inf')]
+    
+    if not valid_results:
+        raise RuntimeError(
+            "No valid results obtained from workers. "
+            "This likely means the C++ library failed to load. "
+            f"Check that {LIB_PATH} exists and is accessible."
+        )
+    
+    best_global = min(valid_results)
     
     return best_global
 

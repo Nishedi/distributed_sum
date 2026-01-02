@@ -213,7 +213,16 @@ cd cpp
 g++ -shared -fPIC -O2 distributed_bnb.cpp -o libcvrp.so
 ```
 
-**Uwaga**: Zaktualizuj `LIB_PATH` w `multiprocessing_cvrp.py` do prawidłowej ścieżki.
+**Uwaga o ścieżce biblioteki**: Kod automatycznie wykrywa lokalizację biblioteki, próbując kilku standardowych ścieżek:
+1. `/home/cluster/distributed_sum/cpp/libcvrp.so` (klaster)
+2. `/home/runner/work/distributed_sum/distributed_sum/cpp/libcvrp.so` (CI/CD)
+3. Ścieżka względna do pliku skryptu
+
+Jeśli biblioteka znajduje się w innym miejscu, możesz ustawić zmienną środowiskową:
+```bash
+export CVRP_LIB_PATH=/custom/path/to/libcvrp.so
+python python/run_multiprocessing.py
+```
 
 ## Podsumowanie
 
