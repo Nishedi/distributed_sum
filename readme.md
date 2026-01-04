@@ -2,7 +2,7 @@
 
 ## 1. Struktura projektu
 
-Projekt zawiera implementację rozproszonego algorytmu Branch and Bound dla problemu komiwojażera z wieloma pojazdami (Capacitated Vehicle Routing Problem - CVRP).
+Projekt zawiera implementację rozproszonego algorytmu Branch and Bound dla problemu marszrutyzacji pojazdów z ograniczeniami pojemnościowymi.
 
 ### Struktura katalogów
 
@@ -10,31 +10,22 @@ Projekt zawiera implementację rozproszonego algorytmu Branch and Bound dla prob
 distributed_sum/
 ├── cpp/                          # Implementacje C++
 │   ├── distributed_bnb.cpp       # Główny algorytm Branch and Bound w C++
-│   ├── sum_array.cpp             # Pomocnicze funkcje do sumowania (legacy)
 │   └── libcvrp.so                # Skompilowana biblioteka współdzielona
-├── python/                       # Warstwa orkiestracji w Pythonie
+├── python/                       # Warstwa zarządzająca w Pythonie
 │   ├── run_ray.py                # Główny skrypt uruchamiający testy
 │   ├── ray_cvrp.py               # Funkcje Ray do dystrybucji zadań
 │   └── greedy.py                 # Algorytm zachłanny do znajdowania górnego ograniczenia
 ├── results/                      # Wyniki eksperymentów
 │   ├── test_one_vs_all_16_sorted.csv  # Posortowane wyniki dla 16 miast
 │   └── *.csv                     # Inne pliki wynikowe
-├── bnb_classic.py                # Klasyczna implementacja BnB w czystym Pythonie
+├── bnb_classic.py                # Klasyczna implementacja BnB w Pythonie
 ├── sort_results.py               # Skrypt do sortowania wyników CSV
 ├── compile_and_send.sh           # Skrypt do kompilacji i dystrybucji biblioteki na klaster
 ├── nodes.txt                     # Lista węzłów w klastrze
 └── venv/                         # Środowisko wirtualne Python
 ```
 
-### Pliki konfiguracyjne
-
-- **nodes.txt** - lista adresów węzłów w klastrze Ray
-- **compile_and_send.sh** - automatyzuje kompilację biblioteki C++ i dystrybucję na wszystkie węzły klastra
-- **.gitignore** - ignoruje pliki środowiska wirtualnego, cache Pythona i pliki obiektowe
-
----
-
-## 2. Implementacja (szczegółowo)
+## 2. Implementacja
 
 ### 2.1. Problem CVRP (Capacitated Vehicle Routing Problem)
 
@@ -101,7 +92,7 @@ public:
   - `n` - liczba miast
   - `C` - pojemność pojazdu
   - `first_city` - indeks pierwszego miasta do odwiedzenia
-  - `cutting` - czy włączyć przycinanie gałęzi (1/0)
+  - `cutting` - czy włączyć przycinanie gałęzi (1/0) - testy BF vs BnB
   - `bound_value` - początkowe górne ograniczenie
 - Zwraca: minimalny koszt znaleziony dla tej podprzestrzeni
 
@@ -113,9 +104,6 @@ public:
 ### 2.3. Algorytm zachłanny (Greedy 1-NN)
 
 **Plik: `python/greedy.py`**
-
-Algorytm zachłanny znajduje szybkie, ale nieoptymalne rozwiązanie:
-
 ```python
 def greedy_cvrp_1nn(dist, C=5):
     1. Start w depocie (miasto 0)
@@ -130,9 +118,7 @@ def greedy_cvrp_1nn(dist, C=5):
     4. Zwróć trasę i całkowity koszt
 ```
 
-**Zastosowanie:** Koszt z algorytmu zachłannego używany jest jako:
-- Górne ograniczenie początkowe (`bound_value`) dla BnB
-- Znacznie przyspiesza algorytm BnB poprzez wcześniejsze odcinanie gałęzi
+**Zastosowanie:** Koszt z algorytmu zachłannego używany jest jako górne ograniczenie początkowe (`bound_value`) dla BnB
 
 ### 2.4. Rozproszone przetwarzanie z Ray
 
@@ -262,7 +248,7 @@ ray.init(address="auto")  # Łączy się z istniejącym klastrem Ray
 **Uruchomienie na klastrze:**
 ```bash
 # Na węźle głównym
-ray start --head --port=6379
+ray start --head --port=6379 --num-cpus=0 # node nie liczy
 
 # Na węzłach roboczych
 ray start --address="<head-node-ip>:6379"
@@ -325,7 +311,7 @@ n, C, method, best_cost, time_sec, preparing_time, computing_time, cluster_type
 
 #### Najlepsze wyniki (najmniejszy czas):
 
-🏆 **Test 5 (BnB pary miast) - Cluster single threads: 99.73s**
+ **Test 5 (BnB pary miast) - Cluster single threads: 99.73s**
 - Najszybszy sposób rozwiązania problemu
 - Drobne zadania zapewniają równomierne obciążenie klastra
 - Współdzielone ograniczenie przyspiesza obliczenia
@@ -364,99 +350,3 @@ n, C, method, best_cost, time_sec, preparing_time, computing_time, cluster_type
    - Przejście z single node na cluster daje znaczące przyspieszenie (2-5x)
    - Optymalna konfiguracja zależy od charakterystyki zadań
 
-### 3.4. Rekomendacje
-
-**Dla problemu CVRP z 16 miastami i podobnymi:**
-1. Używaj **Test 5 (BnB z parami miast) + Cluster single threads**
-2. Włącz współdzielone ograniczenie (`BoundTracker`)
-3. Użyj algorytmu zachłannego dla początkowego ograniczenia
-4. Rozważ single thread na klastrze dla dużej liczby małych zadań
-
-**Optymalizacje dla większych problemów (n > 16):**
-- Test 5 z parami miast da jeszcze większe przyspieszenie
-- Można rozważyć podział na trójki miast dla n > 20
-- Współdzielone ograniczenie staje się bardziej krytyczne
-
----
-
-## 4. Uruchomienie projektu
-
-### 4.1. Wymagania
-
-- Python 3.8+
-- Ray (distributed computing framework)
-- NumPy
-- GCC/G++ (dla kompilacji C++)
-
-### 4.2. Instalacja
-
-```bash
-# Utwórz środowisko wirtualne
-python3 -m venv venv
-source venv/bin/activate
-
-# Zainstaluj zależności
-pip install ray numpy
-
-# Skompiluj bibliotekę C++
-g++ -O3 -fPIC -shared cpp/distributed_bnb.cpp -o cpp/libcvrp.so
-```
-
-### 4.3. Uruchomienie testów
-
-**Klaster pojedynczego węzła:**
-```bash
-python python/run_ray.py --n 14 --C 5 --fn results/test.csv --ct "single node"
-```
-
-**Klaster wielowęzłowy:**
-```bash
-# Węzeł główny
-ray start --head --port=6379
-
-# Węzły robocze (na każdym)
-ray start --address="<head-ip>:6379"
-
-# Uruchom test
-python python/run_ray.py --n 16 --C 5 --fn results/test_cluster.csv --ct "cluster"
-```
-
-### 4.4. Analiza wyników
-
-```bash
-# Posortuj wyniki według metody
-python sort_results.py results/test.csv
-
-# Wyświetl posortowane wyniki
-cat results/test_sorted.csv
-```
-
----
-
-## 5. Dalszy rozwój
-
-### Możliwe usprawnienia:
-
-1. **Adaptacyjny podział zadań:** Dynamiczne dzielenie zadań na podstawie obciążenia workerów
-2. **Cache wyników:** Memoizacja powtarzających się podproblemów
-3. **Lepsza heurystyka dolnego ograniczenia:** Bardziej dokładne oszacowania dla szybszego przycinania
-4. **GPU acceleration:** Wykorzystanie GPU dla operacji macierzowych
-5. **Checkpoint/restart:** Możliwość wznowienia obliczeń po przerwaniu
-
----
-
-## 6. Autor i licencja
-
-Projekt implementuje rozproszone rozwiązanie problemu CVRP przy użyciu algorytmu Branch and Bound.
-
-**Technologie:**
-- C++ (algorytm BnB)
-- Python (orkiestracja)
-- Ray (distributed computing)
-- ctypes (integracja Python-C++)
-
-**Projekt demonstracyjny** ilustrujący techniki:
-- Rozproszonego przetwarzania
-- Integracji Python-C++
-- Algorytmów Branch and Bound
-- Optymalizacji przez współdzielony stan
