@@ -6,9 +6,6 @@
 using namespace std;
 class CVRP_BnB;
 
-// ===========================
-// 1. Generowanie danych
-// ===========================
 void load_coordinates(double** coords, int n) {
     for (int i = 0; i < n; i++) {
         coords[i][0] = rand() % 10001;
@@ -16,9 +13,6 @@ void load_coordinates(double** coords, int n) {
     }
 }
 
-// ===========================
-// 2. Macierz odleg�o�ci
-// ===========================
 double euclidean(double* p1, double* p2) {
     return sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) +
         (p1[1] - p2[1]) * (p1[1] - p2[1]));
@@ -35,9 +29,6 @@ void distance_matrix(double** coords, double** dist, int n) {
     }
 }
 
-// ===========================
-// 3. Dolne ograniczenie
-// ===========================
 double lower_bound(double** dist, bool* visited, int n) {
     double lb = 0.0;
     for (int i = 1; i < n; i++) {
@@ -53,9 +44,6 @@ double lower_bound(double** dist, bool* visited, int n) {
     return lb;
 }
 
-// ===========================
-// 4. Branch and Bound � CVRP
-// ===========================
 class CVRP_BnB {
 public:
     double** dist;
@@ -80,7 +68,6 @@ public:
         double current_cost,
         bool cutting) {
 
-        // wszystkie miasta odwiedzone
         bool done = true;
         for (int i = 0; i < n; i++) {
             if (!visited[i]) {
@@ -96,7 +83,6 @@ public:
             return;
         }
 
-        // lower bound
         double lb = current_cost + lower_bound(dist, visited, n);
         checks++;
         if (lb >= best_cost && cutting) {
@@ -104,7 +90,6 @@ public:
             return;
         }
 
-        // dodawanie miast
         for (int i = 1; i < n; i++) {
             if (!visited[i] && current_load + 1 <= C) {
                 visited[i] = true;
@@ -120,7 +105,6 @@ public:
             }
         }
 
-        // nowy pojazd
         if (current_load > 0) {
             int new_route[20];
             new_route[0] = 0;
@@ -133,13 +117,10 @@ public:
         }
     }
 };
-// ===========================
-// 4b. Funkcja do rozproszenia (C API)
-// ===========================
+
 extern "C" {
 
     double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting, int bound_value) {
-        // Safety check: ensure n doesn't exceed maximum route size
         if (n > 20) {
             cerr << "Error: Number of cities exceeds maximum supported (20)" << endl;
             return 1e18;
@@ -172,7 +153,6 @@ extern "C" {
     }
 
     double solve_from_two_cities(double** dist, int n, int C, int first_city, int second_city, int cutting, int bound_value) {
-        // Safety check: ensure n doesn't exceed maximum route size
         if (n > 20) {
             cerr << "Error: Number of cities exceeds maximum supported (20)" << endl;
             return 1e18;
@@ -208,9 +188,6 @@ extern "C" {
 
 } // extern "C"
 
-// ===========================
-// 5. Main
-// ===========================
 int main() {
     srand(time(nullptr));
 

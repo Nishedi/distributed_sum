@@ -27,7 +27,6 @@ with open(csv_file, mode="a", newline="") as f:
     if not file_exists:
         writer.writerow(["n", "C", "method", "best_cost", "time_sec", "preparing_time", "computing_time", "cluster_type"])
 
-# dane testowe
 coords = np.random.rand(n, 2) * 10000
 dist = np.zeros((n, n))
 results = []
@@ -41,7 +40,7 @@ print("Długość trasy:", cost)
 print(f"Liczba węzłów: {n}")
 print(f"Pojemność pojazdu: {C}")
 print()
-# Warm-up run to load libraries
+# Warm-up
 futures = [solve_city.remote(dist, C, i, 1, 999999999) for i in range(1, min(3, n))]
 
 
@@ -122,8 +121,7 @@ with open(csv_file, mode="a", newline="") as f:
 print("=== Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY ===")
 start_time = time.time()
 bound_tracker = BoundTracker.remote(int(cost))
-# Create tasks for pairs of cities for better load balancing
-futures = [solve_city_pair.remote(dist, C, i, j, 1, int(cost), bound_tracker) 
+futures = [solve_city_pair.remote(dist, C, i, j, 1, int(cost), bound_tracker)
            for i in range(1, n) for j in range(1, n) if i != j]
 preparing_time = time.time()-start_time
 computing_start_time = time.time()

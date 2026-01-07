@@ -2,10 +2,6 @@ import math
 import random
 import time
 
-
-# ===========================
-# 1. Wczytywanie lub generowanie danych
-# ===========================
 def load_coordinates(filename=None, n=10):
     if filename:
         coords = []
@@ -17,9 +13,6 @@ def load_coordinates(filename=None, n=10):
     else:
         return [(random.randint(0, 100), random.randint(0, 100)) for _ in range(n)]
 
-# ===========================
-# 2. Macierz odległości
-# ===========================
 def euclidean(p1, p2):
     return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
@@ -32,22 +25,15 @@ def distance_matrix(coords):
                 dist[i][j] = euclidean(coords[i], coords[j])
     return dist
 
-# ===========================
-# 3. Dolne ograniczenie kosztu (lower bound)
-# ===========================
 def lower_bound(dist, visited):
     lb = 0
     n = len(dist)
     for i in range(1, n):
         if not visited[i]:
-            # minimalny koszt wyjazdu z nieodwiedzonego miasta
             min_dist = min(dist[i][j] for j in range(n) if i != j)
             lb += min_dist
     return lb
 
-# ===========================
-# 4. Branch and Bound dla wielopojezdżcowego CVRP
-# ===========================
 class CVRP_BnB:
     def __init__(self, dist_matrix, capacity):
         self.dist = dist_matrix
@@ -67,7 +53,6 @@ class CVRP_BnB:
         if routes is None:
             routes = []
 
-        # Jeśli wszystkie miasta odwiedzone -> zakończenie
         if all(visited):
             total_cost = current_cost + self.dist[route[-1]][0]
             all_routes = routes + [route + [0]]
@@ -76,14 +61,12 @@ class CVRP_BnB:
                 self.best_routes = all_routes
             return
 
-        # Cięcie gałęzi za pomocą dolnego ograniczenia
         lb = current_cost + lower_bound(self.dist, visited)
         self.checks += 1
         if lb >= self.best_cost and cutting:
             self.cut+=1
             return
 
-        # Rozważanie kolejnych miast
         for i in range(1, self.n):
             if not visited[i]:
                 if current_load + 1 <= self.C:
@@ -92,21 +75,14 @@ class CVRP_BnB:
                                           current_cost + self.dist[route[-1]][i], routes, cutting)
                     visited[i] = False
 
-        # Rozpoczęcie nowej trasy pojazdu, jeśli bieżąca nie może zabrać więcej
         if current_load > 0:
             self.branch_and_bound([0], visited, 0, current_cost, routes + [route], cutting)
 
-# ===========================
-# 5. Uruchomienie skryptu
-# ===========================
 if __name__ == "__main__":
     ns = [4,5,6,7,8,9,10,11,12,13,14,15]
     for n in ns:
         coords = load_coordinates(n=n)
-
         dist = distance_matrix(coords)
-
-
         solver = CVRP_BnB(dist, capacity=5)
         start_time = time.time()
         solver.branch_and_bound()

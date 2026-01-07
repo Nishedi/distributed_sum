@@ -21,7 +21,6 @@ def main():
             if not row:
                 continue
 
-            # wykrycie nagłówka (powtarza się w pliku)
             if row[0] == "n" and "method" in row:
                 if header is None:
                     header = row
@@ -33,10 +32,8 @@ def main():
         print("Błąd: nie znaleziono nagłówka CSV")
         sys.exit(1)
 
-    # indeks kolumny "method"
     method_idx = header.index("method")
 
-    # sortowanie po method
     rows.sort(key=lambda r: r[method_idx])
 
     with open(output_file, "w", newline='', encoding="utf-8") as f:
