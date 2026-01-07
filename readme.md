@@ -309,22 +309,13 @@ n, C, method, best_cost, time_sec, preparing_time, computing_time, cluster_type
 
 ### 3.3. Analiza wyników
 
-#### Najlepsze wyniki (najmniejszy czas):
+1. Pierwsze podejście nie dzieli wyszukanego rozwiązania nawet po zakończeniu zadania przez co sekwencyjne wykonywanie zadań zawsze zaczyna się od tej samej wartości (max int). Testy były przeprowadzone na 16 lokalizacjach. Dlatego było 16 zadań. W podejściu single node multithread jest 8 jednostek liczących a w cluster single thread 9 przez co czas też jest lepszy. W podejściu cluster multithread jest są 72 jednostki liczące przez co każde zadanie można uruchomić od razu co też widać w czasie.
 
- **Test 5 (BnB pary miast) - Cluster single threads: 99.73s**
-- Najszybszy sposób rozwiązania problemu
-- Drobne zadania zapewniają równomierne obciążenie klastra
-- Współdzielone ograniczenie przyspiesza obliczenia
+2. W drugim podejściu obliczenia startują od rozwiązania zachłannego przez co wyniki są lepsze. Ale tutaj również, nie ma żadnej synchronizacji pomiędzy zadaniami więc kolejne zadania są cięte względem greedy i odnoszą się do lokalnie najlepszego rozwiązania.
 
-#### Przyspieszenie względem bazowej implementacji:
+3. Podejście 3 i 4 już współdzieli wspólne ograniczenie, przez co nawet single node single thread działa znacznie szybciej ponieważ korzysta z najlepszego rozwiązania już we wcześniejszych zadaniach, a podejścia równoległe na bieżąco zmieniają globalne najlepsze rozwiązanie co dodatkowo usprawnia B&B
 
-| Metoda | Single Thread | Najlepsza konfiguracja | Przyspieszenie |
-|--------|---------------|------------------------|----------------|
-| Test 1 (BnB podstawowy) | 2598.95s | 246.89s (Cluster MT) | **10.5x** |
-| Test 2 (BnB_SP) | 2172.19s | 246.67s (Cluster MT) | **8.8x** |
-| Test 3 (BnB shared) | 607.79s | 238.51s (Cluster MT) | **2.5x** |
-| Test 4 (BnB_SP shared) | 607.16s | 228.40s (Cluster ST) | **2.7x** |
-| Test 5 (BnB pary) | 432.38s | 99.73s (Cluster ST) | **4.3x** |
+4. W 5 podejściu zadania rozsyłane do węzłów klastra są stosunkowo krótkie. W cluster multithread każdy węzeł dodatkowo ponosi koszt synchronizacji wątków lokalnych, co przy tak krótkich zadaniach może być dominujące. Przez co cluster single threads, która eliminuje synchronizację wewnątrz węzłów i wykorzystuje wyłącznie równoległość między węzłami, osiąga lepszy czas wykonania. 
 
 #### Wnioski:
 
