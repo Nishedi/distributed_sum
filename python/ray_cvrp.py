@@ -9,9 +9,6 @@ import os
 LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
 #LIB_PATH = "/home/kpempera/distributed_sum/cpp/libcvrp.so"
 
-# Define the callback function type for C++
-BOUND_QUERY_CALLBACK = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_void_p)
-
 
 @ray.remote
 class BoundTracker:
@@ -45,6 +42,9 @@ def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None, sync_inte
 
     # Create callback function if bound_tracker is provided
     if bound_tracker is not None:
+        # Define the callback function type for C++ (must be defined locally for Ray serialization)
+        BOUND_QUERY_CALLBACK = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_void_p)
+        
         # Use the _with_callback version
         lib.solve_from_first_city_with_callback.argtypes = [
             ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
@@ -114,6 +114,9 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
 
     # Create callback function if bound_tracker is provided
     if bound_tracker is not None:
+        # Define the callback function type for C++ (must be defined locally for Ray serialization)
+        BOUND_QUERY_CALLBACK = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_void_p)
+        
         # Use the _with_callback version
         lib.solve_from_two_cities_with_callback.argtypes = [
             ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
