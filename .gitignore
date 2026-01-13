@@ -4,3 +4,4 @@ __pycache__
 *.pyo
 *.so.tmp
 *.o
+test_changes.py
