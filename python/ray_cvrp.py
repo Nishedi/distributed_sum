@@ -65,7 +65,7 @@ def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None, sync_inte
             try:
                 current = ray.get(bound_tracker.get_bound.remote())
                 return float(current)
-            except:
+            except Exception:
                 return float('inf')
         
         callback = BOUND_QUERY_CALLBACK(query_bound_callback)
@@ -135,7 +135,7 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
             try:
                 current = ray.get(bound_tracker.get_bound.remote())
                 return float(current)
-            except:
+            except Exception:
                 return float('inf')
         
         callback = BOUND_QUERY_CALLBACK(query_bound_callback)

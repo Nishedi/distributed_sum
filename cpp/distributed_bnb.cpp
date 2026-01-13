@@ -97,14 +97,14 @@ public:
         iterations_since_sync++;
         
         // Check if enough iterations have passed
-        if (iterations_since_sync < sync_check_interval) {
+        if (iterations_since_sync <= sync_check_interval) {
             return;
         }
         
         // Check if enough time has passed
         auto now = chrono::steady_clock::now();
         chrono::duration<double> elapsed = now - last_sync_time;
-        if (elapsed.count() < sync_time_interval) {
+        if (elapsed.count() <= sync_time_interval) {
             return;
         }
         
