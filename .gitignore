@@ -4,3 +4,6 @@ __pycache__
 *.pyo
 *.so.tmp
 *.o
+test_library.py
+test_callback_larger.py
+test_sync.py
