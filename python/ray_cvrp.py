@@ -9,6 +9,10 @@ import os
 LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
 #LIB_PATH = "/home/kpempera/distributed_sum/cpp/libcvrp.so"
 
+# Define callback function types for C++
+GET_BOUND_CALLBACK = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_void_p)
+UPDATE_BOUND_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_double)
+
 
 @ray.remote
 class BoundTracker:
@@ -88,6 +92,113 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
     
     if bound_tracker is not None and result < float('inf'):
         bound_tracker.update_bound.remote(result)
+    
+    return result
+
+
+@ray.remote
+def solve_city_with_sync(dist_np, C, city, BnB, bound_value, bound_tracker, 
+                         sync_check_interval=1000, sync_time_interval_ms=100.0):
+    """
+    Solve CVRP starting from a specific city with synchronous bound updates.
+    C++ will periodically query and update the bound via callbacks during computation.
+    """
+    lib = ctypes.CDLL(LIB_PATH)
+
+    lib.solve_from_first_city_with_sync.argtypes = [
+        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        GET_BOUND_CALLBACK,
+        UPDATE_BOUND_CALLBACK,
+        ctypes.c_void_p,
+        ctypes.c_int,
+        ctypes.c_double
+    ]
+    lib.solve_from_first_city_with_sync.restype = ctypes.c_double
+
+    n = dist_np.shape[0]
+
+    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
+    for i in range(n):
+        row = (ctypes.c_double * n)(*dist_np[i])
+        c_mat[i] = row
+
+    # Create callback functions that interact with the bound_tracker
+    @GET_BOUND_CALLBACK
+    def get_bound_cb(context):
+        """Callback for C++ to query current bound from host"""
+        current = ray.get(bound_tracker.get_bound.remote())
+        return float(current)
+    
+    @UPDATE_BOUND_CALLBACK
+    def update_bound_cb(context, new_bound):
+        """Callback for C++ to update bound on host"""
+        bound_tracker.update_bound.remote(new_bound)
+    
+    # Call the C++ function with callbacks
+    result = lib.solve_from_first_city_with_sync(
+        c_mat, n, C, city, BnB, bound_value,
+        get_bound_cb, update_bound_cb, None,
+        sync_check_interval, sync_time_interval_ms
+    )
+    
+    return result
+
+
+@ray.remote
+def solve_city_pair_with_sync(dist_np, C, city1, city2, BnB, bound_value, bound_tracker,
+                               sync_check_interval=1000, sync_time_interval_ms=100.0):
+    """
+    Solve CVRP starting from two specific cities with synchronous bound updates.
+    C++ will periodically query and update the bound via callbacks during computation.
+    """
+    lib = ctypes.CDLL(LIB_PATH)
+
+    lib.solve_from_two_cities_with_sync.argtypes = [
+        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        GET_BOUND_CALLBACK,
+        UPDATE_BOUND_CALLBACK,
+        ctypes.c_void_p,
+        ctypes.c_int,
+        ctypes.c_double
+    ]
+    lib.solve_from_two_cities_with_sync.restype = ctypes.c_double
+
+    n = dist_np.shape[0]
+
+    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
+    for i in range(n):
+        row = (ctypes.c_double * n)(*dist_np[i])
+        c_mat[i] = row
+
+    # Create callback functions that interact with the bound_tracker
+    @GET_BOUND_CALLBACK
+    def get_bound_cb(context):
+        """Callback for C++ to query current bound from host"""
+        current = ray.get(bound_tracker.get_bound.remote())
+        return float(current)
+    
+    @UPDATE_BOUND_CALLBACK
+    def update_bound_cb(context, new_bound):
+        """Callback for C++ to update bound on host"""
+        bound_tracker.update_bound.remote(new_bound)
+    
+    # Call the C++ function with callbacks
+    result = lib.solve_from_two_cities_with_sync(
+        c_mat, n, C, city1, city2, BnB, bound_value,
+        get_bound_cb, update_bound_cb, None,
+        sync_check_interval, sync_time_interval_ms
+    )
     
     return result
 
