@@ -5,3 +5,4 @@ __pycache__
 *.so.tmp
 *.o
 test_changes.py
+test_integration.py
