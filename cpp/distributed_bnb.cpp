@@ -52,8 +52,10 @@ public:
     double best_cost;
     int cut;
     int checks;
-    double* shared_bound;  // Pointer to shared bound value for real-time updates
+    double* shared_bound;  // Pointer to local bound value for within-worker updates
     int check_interval;    // Check shared bound every N iterations
+    
+    static const int DEFAULT_CHECK_INTERVAL = 1000;  // Check every 1000 iterations
 
     CVRP_BnB(double** dist_matrix, int size, int capacity, int bound_value, double* shared_bound_ptr = nullptr) {
         dist = dist_matrix;
@@ -63,7 +65,7 @@ public:
         cut = 0;
         checks = 0;
         shared_bound = shared_bound_ptr;
-        check_interval = 1000;  // Check every 1000 iterations for efficiency
+        check_interval = DEFAULT_CHECK_INTERVAL;
     }
 
     void branch_and_bound(int* route, int route_len,
@@ -87,7 +89,9 @@ public:
             return;
         }
 
-        // Periodically check shared bound for real-time updates from other workers
+        // Periodically check local bound for within-worker updates
+        // Note: This is NOT synchronized across workers - each worker has its own local copy
+        // Workers only get updates from other workers at task start via BoundTracker
         if (shared_bound != nullptr && checks % check_interval == 0) {
             if (*shared_bound < best_cost) {
                 best_cost = *shared_bound;
@@ -129,6 +133,13 @@ public:
     }
 };
 
+// Helper function to update shared bound if result is better
+inline void update_shared_bound(double* shared_bound, double result) {
+    if (shared_bound != nullptr && result < *shared_bound) {
+        *shared_bound = result;
+    }
+}
+
 extern "C" {
 
     double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting, int bound_value, double* shared_bound) {
@@ -159,11 +170,7 @@ extern "C" {
         );
 
         double result = solver.best_cost;
-        
-        // Update shared bound if we found a better solution
-        if (shared_bound != nullptr && result < *shared_bound) {
-            *shared_bound = result;
-        }
+        update_shared_bound(shared_bound, result);
         
         delete[] visited;
         return result;
@@ -199,11 +206,7 @@ extern "C" {
         );
 
         double result = solver.best_cost;
-        
-        // Update shared bound if we found a better solution
-        if (shared_bound != nullptr && result < *shared_bound) {
-            *shared_bound = result;
-        }
+        update_shared_bound(shared_bound, result);
         
         delete[] visited;
         return result;

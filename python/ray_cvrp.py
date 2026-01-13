@@ -36,7 +36,7 @@ def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):
         ctypes.c_int,
         ctypes.c_int,
         ctypes.c_int,
-        ctypes.POINTER(ctypes.c_double)  # shared_bound pointer
+        ctypes.POINTER(ctypes.c_double)  # local_bound pointer
     ]
     lib.solve_from_first_city.restype = ctypes.c_double
 
@@ -47,14 +47,15 @@ def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):
         row = (ctypes.c_double * n)(*dist_np[i])
         c_mat[i] = row
 
-    # Create shared bound value
-    shared_bound = ctypes.c_double(bound_value)
+    # Create local bound value for this worker
+    # This is NOT shared across workers - each worker has its own copy
+    local_bound = ctypes.c_double(bound_value)
     
     if bound_tracker is not None:
         current_bound = ray.get(bound_tracker.get_bound.remote())
-        shared_bound.value = min(bound_value, current_bound)
+        local_bound.value = min(bound_value, current_bound)
 
-    result = lib.solve_from_first_city(c_mat, n, C, city, BnB, bound_value, ctypes.byref(shared_bound))
+    result = lib.solve_from_first_city(c_mat, n, C, city, BnB, bound_value, ctypes.byref(local_bound))
     
     if bound_tracker is not None and result < float('inf'):
         # Update the global bound tracker with our best result
@@ -75,7 +76,7 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
         ctypes.c_int,
         ctypes.c_int,
         ctypes.c_int,
-        ctypes.POINTER(ctypes.c_double)  # shared_bound pointer
+        ctypes.POINTER(ctypes.c_double)  # local_bound pointer
     ]
     lib.solve_from_two_cities.restype = ctypes.c_double
 
@@ -86,14 +87,15 @@ def solve_city_pair(dist_np, C, city1, city2, BnB, bound_value, bound_tracker=No
         row = (ctypes.c_double * n)(*dist_np[i])
         c_mat[i] = row
 
-    # Create shared bound value
-    shared_bound = ctypes.c_double(bound_value)
+    # Create local bound value for this worker
+    # This is NOT shared across workers - each worker has its own copy
+    local_bound = ctypes.c_double(bound_value)
     
     if bound_tracker is not None:
         current_bound = ray.get(bound_tracker.get_bound.remote())
-        shared_bound.value = min(bound_value, current_bound)
+        local_bound.value = min(bound_value, current_bound)
 
-    result = lib.solve_from_two_cities(c_mat, n, C, city1, city2, BnB, bound_value, ctypes.byref(shared_bound))
+    result = lib.solve_from_two_cities(c_mat, n, C, city1, city2, BnB, bound_value, ctypes.byref(local_bound))
     
     if bound_tracker is not None and result < float('inf'):
         # Update the global bound tracker with our best result
