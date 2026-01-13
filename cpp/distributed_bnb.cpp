@@ -2,9 +2,13 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <chrono>
 
 using namespace std;
 class CVRP_BnB;
+
+// Callback type for querying bound from host
+typedef double (*BoundQueryCallback)(void* user_data);
 
 void load_coordinates(double** coords, int n) {
     for (int i = 0; i < n; i++) {
@@ -52,6 +56,15 @@ public:
     double best_cost;
     int cut;
     int checks;
+    
+    // Synchronization parameters
+    BoundQueryCallback bound_callback;
+    void* callback_user_data;
+    int sync_check_interval;  // Minimum iterations between sync checks
+    double sync_time_interval;  // Minimum seconds between sync checks
+    int iterations_since_sync;
+    chrono::steady_clock::time_point last_sync_time;
+    int sync_count;  // Track number of synchronizations performed
 
     CVRP_BnB(double** dist_matrix, int size, int capacity, int bound_value) {
         dist = dist_matrix;
@@ -60,6 +73,53 @@ public:
         best_cost = bound_value;
         cut = 0;
         checks = 0;
+        bound_callback = nullptr;
+        callback_user_data = nullptr;
+        sync_check_interval = 10000;  // Default: check every 10000 iterations
+        sync_time_interval = 1.0;      // Default: check every 1 second
+        iterations_since_sync = 0;
+        last_sync_time = chrono::steady_clock::now();
+        sync_count = 0;
+    }
+    
+    void set_bound_callback(BoundQueryCallback callback, void* user_data, int check_interval = 10000, double time_interval = 1.0) {
+        bound_callback = callback;
+        callback_user_data = user_data;
+        sync_check_interval = check_interval;
+        sync_time_interval = time_interval;
+    }
+    
+    void check_and_sync_bound() {
+        if (bound_callback == nullptr) {
+            return;
+        }
+        
+        iterations_since_sync++;
+        
+        // Check if enough iterations have passed
+        if (iterations_since_sync < sync_check_interval) {
+            return;
+        }
+        
+        // Check if enough time has passed
+        auto now = chrono::steady_clock::now();
+        chrono::duration<double> elapsed = now - last_sync_time;
+        if (elapsed.count() < sync_time_interval) {
+            return;
+        }
+        
+        // Perform synchronization: query bound from host
+        double host_bound = bound_callback(callback_user_data);
+        
+        // Update local bound if host has a better one
+        if (host_bound < best_cost) {
+            best_cost = host_bound;
+        }
+        
+        // Reset counters
+        iterations_since_sync = 0;
+        last_sync_time = now;
+        sync_count++;
     }
 
     void branch_and_bound(int* route, int route_len,
@@ -85,6 +145,10 @@ public:
 
         double lb = current_cost + lower_bound(dist, visited, n);
         checks++;
+        
+        // Periodically check and synchronize bound with host
+        check_and_sync_bound();
+        
         if (lb >= best_cost && cutting) {
             cut++;
             return;
@@ -120,13 +184,20 @@ public:
 
 extern "C" {
 
-    double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting, int bound_value) {
+    double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting, int bound_value, 
+                                  BoundQueryCallback callback = nullptr, void* user_data = nullptr,
+                                  int sync_interval = 10000, double time_interval = 1.0) {
         if (n > 20) {
             cerr << "Error: Number of cities exceeds maximum supported (20)" << endl;
             return 1e18;
         }
         
         CVRP_BnB solver(dist, n, C, bound_value);
+        
+        // Set up callback if provided
+        if (callback != nullptr) {
+            solver.set_bound_callback(callback, user_data, sync_interval, time_interval);
+        }
 
         bool* visited = new bool[n];
         for (int i = 0; i < n; i++) visited[i] = false;
@@ -152,13 +223,20 @@ extern "C" {
         return result;
     }
 
-    double solve_from_two_cities(double** dist, int n, int C, int first_city, int second_city, int cutting, int bound_value) {
+    double solve_from_two_cities(double** dist, int n, int C, int first_city, int second_city, int cutting, int bound_value,
+                                  BoundQueryCallback callback = nullptr, void* user_data = nullptr,
+                                  int sync_interval = 10000, double time_interval = 1.0) {
         if (n > 20) {
             cerr << "Error: Number of cities exceeds maximum supported (20)" << endl;
             return 1e18;
         }
         
         CVRP_BnB solver(dist, n, C, bound_value);
+        
+        // Set up callback if provided
+        if (callback != nullptr) {
+            solver.set_bound_callback(callback, user_data, sync_interval, time_interval);
+        }
 
         bool* visited = new bool[n];
         for (int i = 0; i < n; i++) visited[i] = false;
