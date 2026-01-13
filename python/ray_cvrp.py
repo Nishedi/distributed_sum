@@ -137,6 +137,8 @@ def solve_city_with_sync(dist_np, C, city, BnB, bound_value, bound_tracker,
     @UPDATE_BOUND_CALLBACK
     def update_bound_cb(context, new_bound):
         """Callback for C++ to update bound on host"""
+        # Fire-and-forget: We don't wait for the update to complete
+        # This is intentional to avoid blocking C++ execution
         bound_tracker.update_bound.remote(new_bound)
     
     # Call the C++ function with callbacks
@@ -191,6 +193,8 @@ def solve_city_pair_with_sync(dist_np, C, city1, city2, BnB, bound_value, bound_
     @UPDATE_BOUND_CALLBACK
     def update_bound_cb(context, new_bound):
         """Callback for C++ to update bound on host"""
+        # Fire-and-forget: We don't wait for the update to complete
+        # This is intentional to avoid blocking C++ execution
         bound_tracker.update_bound.remote(new_bound)
     
     # Call the C++ function with callbacks

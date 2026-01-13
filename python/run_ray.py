@@ -1,6 +1,7 @@
 import ray
 import time
 import numpy as np
+import sys
 from ray_cvrp import solve_city, solve_city_pair, solve_city_with_sync, solve_city_pair_with_sync, BoundTracker
 from greedy import greedy_cvrp_1nn
 import argparse
@@ -34,10 +35,10 @@ else:
         for t in tests_to_run:
             if t not in [1, 2, 3, 4, 5, 6]:
                 print(f"Error: Invalid test number {t}. Must be 1-6.")
-                exit(1)
+                sys.exit(1)
     except ValueError:
         print(f"Error: Invalid test selection format. Use numbers 1-6 separated by commas or 'all'")
-        exit(1)
+        sys.exit(1)
 
 print(f"Running tests: {tests_to_run}")
 
