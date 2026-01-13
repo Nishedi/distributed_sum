@@ -184,9 +184,10 @@ public:
 
 extern "C" {
 
-    double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting, int bound_value, 
-                                  BoundQueryCallback callback = nullptr, void* user_data = nullptr,
-                                  int sync_interval = 10000, double time_interval = 1.0) {
+    // New version with callback support
+    double solve_from_first_city_with_callback(double** dist, int n, int C, int first_city, int cutting, int bound_value, 
+                                                 BoundQueryCallback callback, void* user_data,
+                                                 int sync_interval, double time_interval) {
         if (n > 20) {
             cerr << "Error: Number of cities exceeds maximum supported (20)" << endl;
             return 1e18;
@@ -223,9 +224,15 @@ extern "C" {
         return result;
     }
 
-    double solve_from_two_cities(double** dist, int n, int C, int first_city, int second_city, int cutting, int bound_value,
-                                  BoundQueryCallback callback = nullptr, void* user_data = nullptr,
-                                  int sync_interval = 10000, double time_interval = 1.0) {
+    // Original version without callback (for backward compatibility)
+    double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting, int bound_value) {
+        return solve_from_first_city_with_callback(dist, n, C, first_city, cutting, bound_value, nullptr, nullptr, 10000, 1.0);
+    }
+
+    // New version with callback support
+    double solve_from_two_cities_with_callback(double** dist, int n, int C, int first_city, int second_city, int cutting, int bound_value,
+                                                 BoundQueryCallback callback, void* user_data,
+                                                 int sync_interval, double time_interval) {
         if (n > 20) {
             cerr << "Error: Number of cities exceeds maximum supported (20)" << endl;
             return 1e18;
@@ -262,6 +269,11 @@ extern "C" {
         double result = solver.best_cost;
         delete[] visited;
         return result;
+    }
+
+    // Original version without callback (for backward compatibility)
+    double solve_from_two_cities(double** dist, int n, int C, int first_city, int second_city, int cutting, int bound_value) {
+        return solve_from_two_cities_with_callback(dist, n, C, first_city, second_city, cutting, bound_value, nullptr, nullptr, 10000, 1.0);
     }
 
 } // extern "C"
