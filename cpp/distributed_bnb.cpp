@@ -53,7 +53,7 @@ public:
     double best_cost;
     int cut;
     int checks;
-    int sync = 0;
+    int syncs = 0;
 
     BoundCallback callback;
     std::chrono::steady_clock::time_point last_sync_time;
