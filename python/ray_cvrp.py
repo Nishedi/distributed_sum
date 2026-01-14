@@ -29,31 +29,33 @@ CALLBACK_TYPE = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
 
 @ray.remote
-def solve_city_active_sync(dist_np, C, city, BnB, bound_value, bound_tracker):
+def solve_city_active_sync(dist_np, C, city, BnB, bound_value, bound_tracker, sync_iters, sync_time):
     lib = ctypes.CDLL(LIB_PATH)
 
     CALLBACK_TYPE = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
-    # ZAKTUALIZOWANA LISTA ARGUMENTÓW (dodano POINTER(c_int))
+    # ZAKTUALIZOWANA LISTA ARGUMENTÓW
+    # Kolejność musi zgadzać się z C++:
+    # ..., int* out_syncs, BoundCallback cb, int sync_iters, int sync_time
     lib.solve_with_callback.argtypes = [
-        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.POINTER(ctypes.c_int),  # <--- NOWY ARGUMENT: wskaźnik na licznik
-        CALLBACK_TYPE
+        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),  # dist
+        ctypes.c_int,  # n
+        ctypes.c_int,  # C
+        ctypes.c_int,  # city
+        ctypes.c_int,  # cutting
+        ctypes.c_int,  # bound_value
+        ctypes.POINTER(ctypes.c_int),  # out_syncs
+        CALLBACK_TYPE,  # cb
+        ctypes.c_int,  # NOWE: sync_iters
+        ctypes.c_int  # NOWE: sync_time
     ]
     lib.solve_with_callback.restype = ctypes.c_double
 
-    # ... przygotowanie macierzy (bez zmian) ...
     n = dist_np.shape[0]
     c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
     for i in range(n):
         c_mat[i] = (ctypes.c_double * n)(*dist_np[i])
 
-    # ... definicja callbacku (bez zmian) ...
     def py_callback(local_best_cost):
         try:
             global_best = ray.get(bound_tracker.get_bound.remote())
@@ -65,20 +67,21 @@ def solve_city_active_sync(dist_np, C, city, BnB, bound_value, bound_tracker):
             return float(local_best_cost)
 
     c_callback = CALLBACK_TYPE(py_callback)
-
-    # PRZYGOTOWANIE ZMIENNEJ NA LICZNIK
     c_sync_counter = ctypes.c_int(0)
 
     current_bound = ray.get(bound_tracker.get_bound.remote())
     bound_value = min(bound_value, int(current_bound))
 
-    # WYWOŁANIE Z PRZEKAZANIEM ADRESU (byref)
-    result = lib.solve_with_callback(c_mat, n, C, city, BnB, bound_value, ctypes.byref(c_sync_counter), c_callback)
+    # PRZEKAZANIE NOWYCH PARAMETRÓW NA KOŃCU
+    result = lib.solve_with_callback(
+        c_mat, n, C, city, BnB, bound_value,
+        ctypes.byref(c_sync_counter), c_callback,
+        sync_iters, sync_time
+    )
 
     if result < float('inf'):
         bound_tracker.update_bound.remote(result)
 
-    # ZWRACAMY TERAZ KROTKĘ (TUPLE)
     return result, c_sync_counter.value
 @ray.remote
 def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):

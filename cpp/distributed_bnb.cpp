@@ -60,7 +60,7 @@ public:
     int sync_interval_iters;
     int sync_interval_ms;
 
-    CVRP_BnB(double** dist_matrix, int size, int capacity, int bound_value, BoundCallback cb) {
+    CVRP_BnB(double** dist_matrix, int size, int capacity, int bound_value, BoundCallback cb, int _sync_iters, int _sync_time) {
         dist = dist_matrix;
         n = size;
         C = capacity;
@@ -70,8 +70,8 @@ public:
 
         callback = cb;
         last_sync_time = std::chrono::steady_clock::now();
-        sync_interval_iters = 1000; // Check time every 1000 nodes
-        sync_interval_ms = 2000;     // Sync with host every 200ms
+        sync_interval_iters = _sync_iters; // Check time every 1000 nodes
+        sync_interval_ms = _sync_time;     // Sync with host every 200ms
     }
 
     void branch_and_bound(int* route, int route_len,
@@ -156,7 +156,7 @@ extern "C" {
     double solve_generic(double** dist, int n, int C, int* start_route, int route_len, bool* visited, int load, double current_cost, int cutting, int bound_value, BoundCallback cb) {
         if (n > 20) return 1e18;
 
-        CVRP_BnB solver(dist, n, C, bound_value, cb);
+        CVRP_BnB solver(dist, n, C, bound_value, cb,1000,2000);
 
         solver.branch_and_bound(
             start_route,
@@ -175,7 +175,7 @@ extern "C" {
             return 1e18;
         }
         
-        CVRP_BnB solver(dist, n, C, bound_value, nullptr);
+        CVRP_BnB solver(dist, n, C, bound_value, nullptr, 1000, 2000);
 
         bool* visited = new bool[n];
         for (int i = 0; i < n; i++) visited[i] = false;
@@ -207,7 +207,7 @@ extern "C" {
             return 1e18;
         }
         
-        CVRP_BnB solver(dist, n, C, bound_value, nullptr);
+        CVRP_BnB solver(dist, n, C, bound_value, nullptr, 1000, 2000);
 
         bool* visited = new bool[n];
         for (int i = 0; i < n; i++) visited[i] = false;
@@ -234,8 +234,8 @@ extern "C" {
         delete[] visited;
         return result;
     }
-    double solve_with_callback(double** c_mat, int n, int C, int city, int cutting, int bound_value, int* out_syncs, BoundCallback cb) {
-         CVRP_BnB solver(c_mat, n, C, bound_value, cb);
+    double solve_with_callback(double** c_mat, int n, int C, int city, int cutting, int bound_value, int* out_syncs, BoundCallback cb, int sync_iters, int sync_time) {
+         CVRP_BnB solver(c_mat, n, C, bound_value, cb, sync_iters, sync_time);
 
         bool* visited = new bool[n];
         for (int i = 0; i < n; i++) visited[i] = false;

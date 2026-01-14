@@ -19,6 +19,8 @@ parser.add_argument("--fn", type=str, default="results.csv", help="file name")
 parser.add_argument("--ct", type=str, default="all nodes", help="single node or all nodes")
 parser.add_argument("--test", type=str, default="all", help="which test(s) to run: 1,2,3,4,5,6 or 'all'")
 parser.add_argument("--seed", type=int, default=44, help="seed value")
+parser.add_argument("--sync_iters", type=int, default=1000, help="Check sync time every X iterations")
+parser.add_argument("--sync_time", type=int, default=2000, help="Sync with host every X ms")
 args = parser.parse_args()
 
 n = args.n
@@ -26,6 +28,8 @@ C = args.C
 ct = args.ct
 csv_file = args.fn
 test_selection = args.test
+sync_iters = args.sync_iters
+sync_time = args.sync_time
 np.random.seed(args.seed)
 # Parse test selection
 if test_selection.lower() == "all":
@@ -168,7 +172,7 @@ if 6 in tests_to_run:
 
     bound_tracker = BoundTracker.remote(int(cost))
 
-    futures = [solve_city_active_sync.remote(dist, C, i, 1, int(cost), bound_tracker)
+    futures = [solve_city_active_sync.remote(dist, C, i, 1, int(cost), bound_tracker, sync_iters, sync_time)
                for i in range(1, n)]
 
     preparing_time = time.time() - start_time
