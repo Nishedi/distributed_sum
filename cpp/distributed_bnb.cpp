@@ -265,51 +265,51 @@ extern "C" {
 
 } // extern "C"
 
-int main() {
-    srand(time(nullptr));
-
-    int ns[] = { 4,5,6,7,8,9,10,11,12,13,14,15 };
-
-    for (int idx = 0; idx < 12; idx++) {
-        int n = ns[idx];
-
-        double** coords = new double* [n];
-        double** dist = new double* [n];
-        for (int i = 0; i < n; i++) {
-            coords[i] = new double[2];
-            dist[i] = new double[n];
-        }
-
-        load_coordinates(coords, n);
-        distance_matrix(coords, dist, n);
-
-        CVRP_BnB solver(dist, n, 5, 1e18);
-
-        bool* visited = new bool[n];
-        for (int i = 0; i < n; i++) visited[i] = false;
-        visited[0] = true;
-
-        int route[20];
-        route[0] = 0;
-
-        clock_t start = clock();
-        solver.branch_and_bound(route, 1, visited, 0, 0.0, true);
-        double elapsed = double(clock() - start) / CLOCKS_PER_SEC;
-
-        cout << "BnB Computing for: " << n << endl;
-        cout << "Best cost: " << solver.best_cost << endl;
-        cout << "Time of computing: " << elapsed << endl;
-        cout << "Checks: " << solver.checks << " Cuts: " << solver.cut << endl;
-        cout << "-----------------------------" << endl;
-
-        delete[] visited;
-        for (int i = 0; i < n; i++) {
-            delete[] coords[i];
-            delete[] dist[i];
-        }
-        delete[] coords;
-        delete[] dist;
-    }
-
-    return 0;
-}
+//int main() {
+//    srand(time(nullptr));
+//
+//    int ns[] = { 4,5,6,7,8,9,10,11,12,13,14,15 };
+//
+//    for (int idx = 0; idx < 12; idx++) {
+//        int n = ns[idx];
+//
+//        double** coords = new double* [n];
+//        double** dist = new double* [n];
+//        for (int i = 0; i < n; i++) {
+//            coords[i] = new double[2];
+//            dist[i] = new double[n];
+//        }
+//
+//        load_coordinates(coords, n);
+//        distance_matrix(coords, dist, n);
+//
+//        CVRP_BnB solver(dist, n, 5, 1e18);
+//
+//        bool* visited = new bool[n];
+//        for (int i = 0; i < n; i++) visited[i] = false;
+//        visited[0] = true;
+//
+//        int route[20];
+//        route[0] = 0;
+//
+//        clock_t start = clock();
+//        solver.branch_and_bound(route, 1, visited, 0, 0.0, true);
+//        double elapsed = double(clock() - start) / CLOCKS_PER_SEC;
+//
+//        cout << "BnB Computing for: " << n << endl;
+//        cout << "Best cost: " << solver.best_cost << endl;
+//        cout << "Time of computing: " << elapsed << endl;
+//        cout << "Checks: " << solver.checks << " Cuts: " << solver.cut << endl;
+//        cout << "-----------------------------" << endl;
+//
+//        delete[] visited;
+//        for (int i = 0; i < n; i++) {
+//            delete[] coords[i];
+//            delete[] dist[i];
+//        }
+//        delete[] coords;
+//        delete[] dist;
+//    }
+//
+//    return 0;
+//}
