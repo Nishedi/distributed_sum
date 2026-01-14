@@ -30,61 +30,58 @@ CALLBACK_TYPE = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
 @ray.remote
 def solve_city_active_sync(dist_np, C, city, BnB, bound_value, bound_tracker):
-    """
-    Solves CVRP starting from 'city', actively syncing bound with bound_tracker
-    via a C++ callback.
-    """
+    # 1. Load library inside the function
     lib = ctypes.CDLL(LIB_PATH)
 
-    # Define argument types for the new C++ function
+    # 2. Define Callback Type INSIDE the function to avoid pickling errors
+    CALLBACK_TYPE = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
+
+    # 3. Setup argtypes
     lib.solve_with_callback.argtypes = [
-        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.c_int,
-        CALLBACK_TYPE  # The callback
+        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),  # dist matrix
+        ctypes.c_int,  # n
+        ctypes.c_int,  # C
+        ctypes.c_int,  # city
+        ctypes.c_int,  # cutting
+        ctypes.c_int,  # bound_value
+        CALLBACK_TYPE  # callback function
     ]
     lib.solve_with_callback.restype = ctypes.c_double
 
-    # Prepare Matrix
+    # 4. Prepare Data
     n = dist_np.shape[0]
     c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
     for i in range(n):
         row = (ctypes.c_double * n)(*dist_np[i])
         c_mat[i] = row
 
-    # --- THE CALLBACK FUNCTION ---
-    # This runs inside the worker process when C++ calls it.
+    # 5. Define the Python Callback
     def py_callback(local_best_cost):
-        # 1. Check if we should update global
-        # Note: We use ray.get inside. This is synchronous.
-        # Ideally, we verify local vs global cache to minimize Ray traffic,
-        # but the C++ side already throttles calls (e.g. every 200ms).
+        # Synchronous check with Ray actor (blocking this worker briefly)
+        # Note: We use ray.get here. C++ calls this function.
+        try:
+            global_best = ray.get(bound_tracker.get_bound.remote())
 
-        # Pull global best
-        global_best = ray.get(bound_tracker.get_bound.remote())
+            if local_best_cost < global_best:
+                bound_tracker.update_bound.remote(local_best_cost)
+                return float(local_best_cost)
 
-        # If local is better, update global
-        if local_best_cost < global_best:
-            bound_tracker.update_bound.remote(local_best_cost)
+            return float(global_best)
+        except Exception as e:
+            # Fallback in case of ray communication error
             return float(local_best_cost)
 
-        # Return the potentially tighter global bound to C++
-        return float(global_best)
-
-    # Create the C-callable function pointer
+    # 6. Create C-callable pointer
     c_callback = CALLBACK_TYPE(py_callback)
 
-    # Initial check
+    # 7. Initial Bound Check
     current_bound = ray.get(bound_tracker.get_bound.remote())
     bound_value = min(bound_value, int(current_bound))
 
-    # Run Solver
+    # 8. Run Solver
     result = lib.solve_with_callback(c_mat, n, C, city, BnB, bound_value, c_callback)
 
-    # Final update just in case
+    # Final update
     if result < float('inf'):
         bound_tracker.update_bound.remote(result)
 
