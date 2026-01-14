@@ -70,7 +70,7 @@ public:
         callback = cb;
         last_sync_time = std::chrono::steady_clock::now();
         sync_interval_iters = 1000; // Check time every 1000 nodes
-        sync_interval_ms = 200;     // Sync with host every 200ms
+        sync_interval_ms = 2000;     // Sync with host every 200ms
     }
 
     void branch_and_bound(int* route, int route_len,
