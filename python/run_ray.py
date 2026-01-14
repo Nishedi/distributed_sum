@@ -39,7 +39,7 @@ else:
         tests_to_run = [int(t.strip()) for t in test_selection.split(",")]
         # Validate test numbers
         for t in tests_to_run:
-            if t not in [1, 2, 3, 4, 5, 6]:
+            if t not in [1, 2, 3, 4, 5, 6,7]:
                 print(f"Error: Invalid test number {t}. Must be 1-6.")
                 sys.exit(1)
     except ValueError:
