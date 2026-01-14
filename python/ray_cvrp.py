@@ -9,7 +9,7 @@ import os
 LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
 #LIB_PATH = "/home/kpempera/distributed_sum/cpp/libcvrp.so"
 
-
+# lokalna kopia lowerbound i sprawdzac w remocie gdy jest znaleziony nowy
 @ray.remote
 class BoundTracker:
     def __init__(self, initial_bound):
