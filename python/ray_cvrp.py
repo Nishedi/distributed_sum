@@ -4,6 +4,7 @@ import ray
 import ctypes
 import numpy as np
 import os
+import time
 
 
 LIB_PATH = "/home/cluster/distributed_sum/cpp/libcvrp.so"
@@ -72,17 +73,19 @@ def solve_city_active_sync(dist_np, C, city, BnB, bound_value, bound_tracker, sy
     current_bound = ray.get(bound_tracker.get_bound.remote())
     bound_value = min(bound_value, int(current_bound))
 
-    # PRZEKAZANIE NOWYCH PARAMETRÓW NA KOŃCU
+
+    start_task = time.time()
     result = lib.solve_with_callback(
         c_mat, n, C, city, BnB, bound_value,
         ctypes.byref(c_sync_counter), c_callback,
         sync_iters, sync_time
     )
+    duration = time.time() - start_task
 
     if result < float('inf'):
         bound_tracker.update_bound.remote(result)
 
-    return result, c_sync_counter.value
+    return result, c_sync_counter.value, duration
 @ray.remote
 def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):
     lib = ctypes.CDLL(LIB_PATH)

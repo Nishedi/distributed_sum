@@ -175,6 +175,7 @@ if 6 in tests_to_run:
     futures = [solve_city_active_sync.remote(dist, C, i, 1, int(cost), bound_tracker, sync_iters, sync_time)
                for i in range(1, n)]
 
+
     preparing_time = time.time() - start_time
     computing_start_time = time.time()
 
@@ -198,10 +199,30 @@ if 6 in tests_to_run:
     print(f"Średnia liczba synchronizacji na worker: {avg_syncs:.1f}")
     print()
 
-    with open(csv_file, mode="a", newline="") as f:
-        writer = csv.writer(f)
-        # Możesz dodać kolumnę total_syncs do CSV jeśli chcesz
-        writer.writerow([n, C, "Test 6: BnB Sync + Callback", best_res, end_time, preparing_time, computing_time, ct])
+    log_filename = "task_details.csv"
+    log_exists = os.path.isfile(log_filename)
+
+    with open(log_filename, mode="a", newline="") as log_f:
+        log_writer = csv.writer(log_f)
+        if not log_exists:
+            log_writer.writerow(["test_id", "n", "city_index", "cost", "syncs", "duration_sec", "machine_info"])
+
+        for idx, (task_cost, task_syncs, task_duration) in enumerate(results_raw):
+            city_index = idx + 1  # Ponieważ pętla była range(1, n)
+
+            # Zapisujemy wiersz dla każdego zadania
+            log_writer.writerow([
+                "Test 6",  # ID testu
+                n,  # Rozmiar problemu
+                city_index,  # Które to było miasto (zadanie)
+                task_cost,  # Wynik tego zadania
+                task_syncs,  # Ile razy się synchronizował
+                f"{task_duration:.4f}",  # Czas trwania
+                ct  # Info o klastrze
+            ])
+
+
+
 #start_time = time.time()
 #futures = [solve_city.remote(dist, C, i, 0, 999999999) for i in range(1, n)]
 #results = ray.get(futures)
