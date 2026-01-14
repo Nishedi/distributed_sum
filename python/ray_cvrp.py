@@ -30,62 +30,56 @@ CALLBACK_TYPE = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
 @ray.remote
 def solve_city_active_sync(dist_np, C, city, BnB, bound_value, bound_tracker):
-    # 1. Load library inside the function
     lib = ctypes.CDLL(LIB_PATH)
 
-    # 2. Define Callback Type INSIDE the function to avoid pickling errors
     CALLBACK_TYPE = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
-    # 3. Setup argtypes
+    # ZAKTUALIZOWANA LISTA ARGUMENTÓW (dodano POINTER(c_int))
     lib.solve_with_callback.argtypes = [
-        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),  # dist matrix
-        ctypes.c_int,  # n
-        ctypes.c_int,  # C
-        ctypes.c_int,  # city
-        ctypes.c_int,  # cutting
-        ctypes.c_int,  # bound_value
-        CALLBACK_TYPE  # callback function
+        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.POINTER(ctypes.c_int),  # <--- NOWY ARGUMENT: wskaźnik na licznik
+        CALLBACK_TYPE
     ]
     lib.solve_with_callback.restype = ctypes.c_double
 
-    # 4. Prepare Data
+    # ... przygotowanie macierzy (bez zmian) ...
     n = dist_np.shape[0]
     c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
     for i in range(n):
-        row = (ctypes.c_double * n)(*dist_np[i])
-        c_mat[i] = row
+        c_mat[i] = (ctypes.c_double * n)(*dist_np[i])
 
-    # 5. Define the Python Callback
+    # ... definicja callbacku (bez zmian) ...
     def py_callback(local_best_cost):
-        # Synchronous check with Ray actor (blocking this worker briefly)
-        # Note: We use ray.get here. C++ calls this function.
         try:
             global_best = ray.get(bound_tracker.get_bound.remote())
-
             if local_best_cost < global_best:
                 bound_tracker.update_bound.remote(local_best_cost)
                 return float(local_best_cost)
-
             return float(global_best)
-        except Exception as e:
-            # Fallback in case of ray communication error
+        except:
             return float(local_best_cost)
 
-    # 6. Create C-callable pointer
     c_callback = CALLBACK_TYPE(py_callback)
 
-    # 7. Initial Bound Check
+    # PRZYGOTOWANIE ZMIENNEJ NA LICZNIK
+    c_sync_counter = ctypes.c_int(0)
+
     current_bound = ray.get(bound_tracker.get_bound.remote())
     bound_value = min(bound_value, int(current_bound))
 
-    # 8. Run Solver
-    result = lib.solve_with_callback(c_mat, n, C, city, BnB, bound_value, c_callback)
+    # WYWOŁANIE Z PRZEKAZANIEM ADRESU (byref)
+    result = lib.solve_with_callback(c_mat, n, C, city, BnB, bound_value, ctypes.byref(c_sync_counter), c_callback)
 
-    # Final update
     if result < float('inf'):
         bound_tracker.update_bound.remote(result)
 
-    return result
+    # ZWRACAMY TERAZ KROTKĘ (TUPLE)
+    return result, c_sync_counter.value
 @ray.remote
 def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):
     lib = ctypes.CDLL(LIB_PATH)

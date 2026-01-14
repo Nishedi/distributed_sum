@@ -163,36 +163,41 @@ if 5 in tests_to_run:
         writer.writerow([n, C, "Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY", min(results), end_time, preparing_time, computing_time, ct])
 
 if 6 in tests_to_run:
-    # Test 6: BnB with Active C++ <-> Python Synchronization
     print("=== Test 6: BnB z AKTYWNĄ synchronizacją (Callback) ===")
-
     start_time = time.time()
 
-    # Init shared tracker with Greedy cost
     bound_tracker = BoundTracker.remote(int(cost))
 
-    # Launch tasks using the new function with callback support
     futures = [solve_city_active_sync.remote(dist, C, i, 1, int(cost), bound_tracker)
                for i in range(1, n)]
 
     preparing_time = time.time() - start_time
     computing_start_time = time.time()
 
-    results = ray.get(futures)
+    # Odbierz wyniki (lista krotek)
+    results_raw = ray.get(futures)
 
     end_time = time.time() - start_time
     computing_time = time.time() - computing_start_time
 
-    best_res = min(results)
+    # Rozpakuj wyniki: [ (koszt1, sync1), (koszt2, sync2), ... ]
+    costs = [r[0] for r in results_raw]
+    syncs = [r[1] for r in results_raw]
+
+    best_res = min(costs)
+    total_syncs = sum(syncs)
+    avg_syncs = total_syncs / len(syncs) if syncs else 0
+
     print(f"Najlepszy wynik: {best_res}")
     print(f"Czas: {end_time:.4f}s")
+    print(f"Łączna liczba synchronizacji: {total_syncs}")
+    print(f"Średnia liczba synchronizacji na worker: {avg_syncs:.1f}")
     print()
 
     with open(csv_file, mode="a", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(
-            [n, C, "Test 6: BnB Aktywna Synchronizacja Callback", best_res, end_time, preparing_time, computing_time,
-             ct])
+        # Możesz dodać kolumnę total_syncs do CSV jeśli chcesz
+        writer.writerow([n, C, "Test 6: BnB Sync + Callback", best_res, end_time, preparing_time, computing_time, ct])
 #start_time = time.time()
 #futures = [solve_city.remote(dist, C, i, 0, 999999999) for i in range(1, n)]
 #results = ray.get(futures)

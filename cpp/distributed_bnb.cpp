@@ -53,6 +53,7 @@ public:
     double best_cost;
     int cut;
     int checks;
+    int sync = 0;
 
     BoundCallback callback;
     std::chrono::steady_clock::time_point last_sync_time;
@@ -80,17 +81,14 @@ public:
         bool cutting) {
 
         if (callback != nullptr) {
-            // Only check clock every X iterations to save performance
             if (checks % sync_interval_iters == 0) {
                 auto now = std::chrono::steady_clock::now();
                 auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_sync_time).count();
 
-                // If enough time passed, call Python!
                 if (elapsed > sync_interval_ms) {
-                    // Send our local best, get back global best
                     double global_best = callback(best_cost);
+                    syncs++;
 
-                    // Update local if global is better
                     if (global_best < best_cost) {
                         best_cost = global_best;
                     }
@@ -236,7 +234,7 @@ extern "C" {
         delete[] visited;
         return result;
     }
-    double solve_with_callback(double** c_mat, int n, int C, int city, int cutting, int bound_value, BoundCallback cb) {
+    double solve_with_callback(double** c_mat, int n, int C, int city, int cutting, int bound_value, int* out_syncs, BoundCallback cb) {
          CVRP_BnB solver(c_mat, n, C, bound_value, cb);
 
         bool* visited = new bool[n];
@@ -257,6 +255,11 @@ extern "C" {
             c_mat[0][city],
             cutting!=0
         );
+
+        // ZAPISZ LICZNIK DO WSKAŹNIKA PRZEKAZANEGO Z PYTHONA
+        if (out_syncs != nullptr) {
+            *out_syncs = solver.syncs;
+        }
 
         double result = solver.best_cost;
         delete[] visited;
