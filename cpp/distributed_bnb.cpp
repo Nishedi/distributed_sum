@@ -177,7 +177,7 @@ extern "C" {
             return 1e18;
         }
         
-        CVRP_BnB solver(dist, n, C, bound_value);
+        CVRP_BnB solver(dist, n, C, bound_value, nullptr);
 
         bool* visited = new bool[n];
         for (int i = 0; i < n; i++) visited[i] = false;
@@ -209,7 +209,7 @@ extern "C" {
             return 1e18;
         }
         
-        CVRP_BnB solver(dist, n, C, bound_value);
+        CVRP_BnB solver(dist, n, C, bound_value, nullptr);
 
         bool* visited = new bool[n];
         for (int i = 0; i < n; i++) visited[i] = false;
