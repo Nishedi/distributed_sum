@@ -2,7 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-
+#include <chrono>
 using namespace std;
 typedef double (*BoundCallback)(double);
 class CVRP_BnB;
@@ -59,7 +59,7 @@ public:
     int sync_interval_iters;
     int sync_interval_ms;
 
-    CVRP_BnB(double** dist_matrix, int size, int capacity, int bound_value) {
+    CVRP_BnB(double** dist_matrix, int size, int capacity, int bound_value, BoundCallback cb) {
         dist = dist_matrix;
         n = size;
         C = capacity;
