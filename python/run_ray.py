@@ -18,6 +18,7 @@ parser.add_argument("--C", type=int, default=5, help="vehicle capacity")
 parser.add_argument("--fn", type=str, default="results.csv", help="file name")
 parser.add_argument("--ct", type=str, default="all nodes", help="single node or all nodes")
 parser.add_argument("--test", type=str, default="all", help="which test(s) to run: 1,2,3,4,5,6 or 'all'")
+parser.add_argument("--seed", type=int, default=44, help="seed value")
 args = parser.parse_args()
 
 n = args.n
@@ -25,7 +26,7 @@ C = args.C
 ct = args.ct
 csv_file = args.fn
 test_selection = args.test
-
+np.random.seed(args.seed)
 # Parse test selection
 if test_selection.lower() == "all":
     tests_to_run = [1, 2, 3, 4, 5, 6]
