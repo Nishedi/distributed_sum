@@ -4,6 +4,7 @@
 #include <ctime>
 
 using namespace std;
+typedef double (*BoundCallback)(double);
 class CVRP_BnB;
 
 void load_coordinates(double** coords, int n) {
@@ -53,6 +54,11 @@ public:
     int cut;
     int checks;
 
+    BoundCallback callback;
+    std::chrono::steady_clock::time_point last_sync_time;
+    int sync_interval_iters;
+    int sync_interval_ms;
+
     CVRP_BnB(double** dist_matrix, int size, int capacity, int bound_value) {
         dist = dist_matrix;
         n = size;
@@ -60,6 +66,11 @@ public:
         best_cost = bound_value;
         cut = 0;
         checks = 0;
+
+        callback = cb;
+        last_sync_time = std::chrono::steady_clock::now();
+        sync_interval_iters = 1000; // Check time every 1000 nodes
+        sync_interval_ms = 200;     // Sync with host every 200ms
     }
 
     void branch_and_bound(int* route, int route_len,
@@ -67,6 +78,26 @@ public:
         int current_load,
         double current_cost,
         bool cutting) {
+
+        if (callback != nullptr) {
+            // Only check clock every X iterations to save performance
+            if (checks % sync_interval_iters == 0) {
+                auto now = std::chrono::steady_clock::now();
+                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_sync_time).count();
+
+                // If enough time passed, call Python!
+                if (elapsed > sync_interval_ms) {
+                    // Send our local best, get back global best
+                    double global_best = callback(best_cost);
+
+                    // Update local if global is better
+                    if (global_best < best_cost) {
+                        best_cost = global_best;
+                    }
+                    last_sync_time = now;
+                }
+            }
+        }
 
         bool done = true;
         for (int i = 0; i < n; i++) {
@@ -78,8 +109,13 @@ public:
 
         if (done) {
             double total_cost = current_cost + dist[route[route_len - 1]][0];
-            if (total_cost < best_cost)
+            if (total_cost < best_cost) {
                 best_cost = total_cost;
+                // Immediate update if we found a solution
+                if (callback != nullptr) {
+                     callback(best_cost);
+                }
+            }
             return;
         }
 
@@ -119,7 +155,22 @@ public:
 };
 
 extern "C" {
+    double solve_generic(double** dist, int n, int C, int* start_route, int route_len, bool* visited, int load, double current_cost, int cutting, int bound_value, BoundCallback cb) {
+        if (n > 20) return 1e18;
 
+        CVRP_BnB solver(dist, n, C, bound_value, cb);
+
+        solver.branch_and_bound(
+            start_route,
+            route_len,
+            visited,
+            load,
+            current_cost,
+            cutting != 0
+        );
+
+        return solver.best_cost;
+    }
     double solve_from_first_city(double** dist, int n, int C, int first_city, int cutting, int bound_value) {
         if (n > 20) {
             cerr << "Error: Number of cities exceeds maximum supported (20)" << endl;
@@ -178,6 +229,32 @@ extern "C" {
             visited,
             2,
             dist[0][first_city] + dist[first_city][second_city],
+            cutting!=0
+        );
+
+        double result = solver.best_cost;
+        delete[] visited;
+        return result;
+    }
+    double solve_with_callback(double** c_mat, int n, int C, int city, int cutting, int bound_value, BoundCallback cb) {
+         CVRP_BnB solver(c_mat, n, C, bound_value, cb);
+
+        bool* visited = new bool[n];
+        for (int i = 0; i < n; i++) visited[i] = false;
+
+        visited[0] = true;
+        visited[city] = true;
+
+        int route[20];
+        route[0] = 0;
+        route[1] = city;
+
+        solver.branch_and_bound(
+            route,
+            2,
+            visited,
+            1,
+            c_mat[0][city],
             cutting!=0
         );
 
