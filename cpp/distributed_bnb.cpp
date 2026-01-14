@@ -265,6 +265,44 @@ extern "C" {
         delete[] visited;
         return result;
     }
+    // Nowa funkcja dla TESTU 7: Pary miast + Callback
+    double solve_pair_with_callback(double** c_mat, int n, int C, int city1, int city2, int cutting, int bound_value, int* out_syncs, BoundCallback cb, int sync_iters, int sync_time) {
+
+        // Używamy tego samego konstruktora co w Teście 6
+        CVRP_BnB solver(c_mat, n, C, bound_value, cb, sync_iters, sync_time);
+
+        bool* visited = new bool[n];
+        for (int i = 0; i < n; i++) visited[i] = false;
+
+        // Ustawiamy start trasy: 0 -> city1 -> city2
+        visited[0] = true;
+        visited[city1] = true;
+        visited[city2] = true;
+
+        int route[20];
+        route[0] = 0;
+        route[1] = city1;
+        route[2] = city2;
+
+        // Startujemy z głębokości 3 (bo mamy już 3 miasta w trasie)
+        solver.branch_and_bound(
+            route,
+            3,                  // route_len
+            visited,
+            2,                  // current_load (2 miasta odwiedzone)
+            c_mat[0][city1] + c_mat[city1][city2], // current_cost
+            cutting != 0
+        );
+
+        // Zapisujemy liczbę synchronizacji
+        if (out_syncs != nullptr) {
+            *out_syncs = solver.syncs;
+        }
+
+        double result = solver.best_cost;
+        delete[] visited;
+        return result;
+    }
 
 } // extern "C"
 

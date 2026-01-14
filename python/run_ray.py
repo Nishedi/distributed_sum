@@ -3,7 +3,7 @@ import sys
 import ray
 import time
 import numpy as np
-from ray_cvrp import solve_city, solve_city_pair, BoundTracker, solve_city_active_sync
+from ray_cvrp import solve_city, solve_city_pair, BoundTracker, solve_city_active_sync, solve_city_pair_active_sync
 from greedy import greedy_cvrp_1nn
 import argparse
 import csv
@@ -221,8 +221,75 @@ if 6 in tests_to_run:
                 ct  # Info o klastrze
             ])
 
+if 7 in tests_to_run:
+    print(f"=== Test 7: BnB Pary Miast + Active Sync (Hybryda) ===")
+
+    start_time = time.time()
+    bound_tracker = BoundTracker.remote(int(cost))
+
+    # Generujemy zadania dla par
+    futures = []
+    # Przechowujemy metadane, żeby wiedzieć która para to które zadanie w logach
+    task_metadata = []
 
 
+    for i in range(1, n):
+        for j in range(1, n):
+            if i != j:
+                future = solve_city_pair_active_sync.remote(
+                    dist, C, i, j, 1, int(cost), bound_tracker, sync_iters, sync_time
+                )
+                futures.append(future)
+                task_metadata.append(f"{i}-{j}")  # Zapisujemy "skąd-dokąd"
+
+    preparing_time = time.time() - start_time
+    computing_start_time = time.time()
+
+    # Odbiór wyników
+    results_raw = ray.get(futures)
+
+    end_time = time.time() - start_time
+    computing_time = time.time() - computing_start_time
+
+    # --- LOGOWANIE DO PLIKU SZCZEGÓŁOWEGO ---
+    log_filename = "task_details.csv"
+    log_exists = os.path.isfile(log_filename)
+
+    with open(log_filename, mode="a", newline="") as log_f:
+        log_writer = csv.writer(log_f)
+        if not log_exists:
+            log_writer.writerow(["test_id", "n", "city_index", "cost", "syncs", "duration_sec", "machine_info"])
+
+        for idx, (task_cost, task_syncs, task_duration) in enumerate(results_raw):
+            pair_name = task_metadata[idx]  # np. "1-2"
+
+            log_writer.writerow([
+                "Test 7",
+                n,
+                pair_name,  # Zapisujemy parę jako string "1-2" w kolumnie city_index
+                task_cost,
+                task_syncs,
+                f"{task_duration:.4f}",
+                ct
+            ])
+
+    # Statystyki ogólne
+    costs = [r[0] for r in results_raw]
+    syncs = [r[1] for r in results_raw]
+    durations = [r[2] for r in results_raw]
+
+    best_res = min(costs)
+    total_syncs = sum(syncs)
+
+    print(f"Najlepszy wynik: {best_res}")
+    print(f"Czas całkowity: {end_time:.4f}s")
+    print(f"Liczba zadań: {len(futures)}")
+    print(f"Łączna liczba synchronizacji: {total_syncs}")
+    print()
+
+    with open(csv_file, mode="a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([n, C, "Test 7: Hybryda (Pary + Sync)", best_res, end_time, preparing_time, computing_time, ct])
 #start_time = time.time()
 #futures = [solve_city.remote(dist, C, i, 0, 999999999) for i in range(1, n)]
 #results = ray.get(futures)
