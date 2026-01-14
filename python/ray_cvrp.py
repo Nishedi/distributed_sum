@@ -25,6 +25,70 @@ class BoundTracker:
         return self.best_bound
 
 
+CALLBACK_TYPE = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
+
+
+@ray.remote
+def solve_city_active_sync(dist_np, C, city, BnB, bound_value, bound_tracker):
+    """
+    Solves CVRP starting from 'city', actively syncing bound with bound_tracker
+    via a C++ callback.
+    """
+    lib = ctypes.CDLL(LIB_PATH)
+
+    # Define argument types for the new C++ function
+    lib.solve_with_callback.argtypes = [
+        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        CALLBACK_TYPE  # The callback
+    ]
+    lib.solve_with_callback.restype = ctypes.c_double
+
+    # Prepare Matrix
+    n = dist_np.shape[0]
+    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
+    for i in range(n):
+        row = (ctypes.c_double * n)(*dist_np[i])
+        c_mat[i] = row
+
+    # --- THE CALLBACK FUNCTION ---
+    # This runs inside the worker process when C++ calls it.
+    def py_callback(local_best_cost):
+        # 1. Check if we should update global
+        # Note: We use ray.get inside. This is synchronous.
+        # Ideally, we verify local vs global cache to minimize Ray traffic,
+        # but the C++ side already throttles calls (e.g. every 200ms).
+
+        # Pull global best
+        global_best = ray.get(bound_tracker.get_bound.remote())
+
+        # If local is better, update global
+        if local_best_cost < global_best:
+            bound_tracker.update_bound.remote(local_best_cost)
+            return float(local_best_cost)
+
+        # Return the potentially tighter global bound to C++
+        return float(global_best)
+
+    # Create the C-callable function pointer
+    c_callback = CALLBACK_TYPE(py_callback)
+
+    # Initial check
+    current_bound = ray.get(bound_tracker.get_bound.remote())
+    bound_value = min(bound_value, int(current_bound))
+
+    # Run Solver
+    result = lib.solve_with_callback(c_mat, n, C, city, BnB, bound_value, c_callback)
+
+    # Final update just in case
+    if result < float('inf'):
+        bound_tracker.update_bound.remote(result)
+
+    return result
 @ray.remote
 def solve_city(dist_np, C, city, BnB, bound_value, bound_tracker=None):
     lib = ctypes.CDLL(LIB_PATH)
