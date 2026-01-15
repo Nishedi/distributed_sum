@@ -1,8 +1,10 @@
 n,C,method,best_cost,time_sec,preparing_time,computing_time,cluster_type
 18,5,Test 4: BnB_SP ze współdzielonym ograniczeniem (POPRAWIONY),39471.55257446351,3460.159611940384,0.01774287223815918,3460.1418721675873,Cluster multithread
 18,5,Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY,39471.0,756.4349150657654,0.20389199256896973,756.2310259342194,Cluster multithread
-18,5,Test 6: Test 6: BnB z AKTYWNĄ synchronizacją (Callback),39471.0,356.7161,0.000,0.0000,Cluster multithread
-18,5,Test 7: Hybryda (Pary + Sync),39471.0,63.764058113098145,0.14867329597473145,63.615384340286255,Cluster multithred
 18,5,Test 5: BnB z drobnymi zadaniami (pary miast) - NAJBARDZIEJ POPRAWIONY,39471.0,281.52607345581055,0.14671540260314941,281.3793594837189,Cluster singlethread
+18,5,Test 6: Test 6: BnB z AKTYWNĄ synchronizacją (Callback),39471.0,356.7161,0.000,0.0000,Cluster multithread
 18,5,Test 6: Test 6: BnB z AKTYWNĄ synchronizacją (Callback),39471.0,281.5261,0.00,0.00,Cluster single thread
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,63.764058113098145,0.14867329597473145,63.615384340286255,Cluster multithred
 18,5,Test 7: Hybryda (Pary + Sync),39471.0,128.70854544639587,0.1670076847076416,128.5415380001068,Cluster singlethread
+19,5,Test 7: Hybryda (Pary + Sync),40129.0,500.63950181007385,0.16152501106262207,500.4779763221741,Cluster multithread
+19,5,Test 7: Hybryda (Pary + Sync),40129.0,1016.7742989063263,0.18518805503845215,1016.589111328125,Cluster singlethread
