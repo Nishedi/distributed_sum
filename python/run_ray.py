@@ -3,12 +3,11 @@ import sys
 import ray
 import time
 import numpy as np
-from ray_cvrp import solve_city, solve_city_pair, BoundTracker, solve_city_active_sync, solve_city_pair_active_sync
+from ray_cvrp import solve_city, solve_city_pair, BoundTracker, solve_city_active_sync, solve_whole_instance_node_parallel, solve_city_pair_active_sync
 from greedy import greedy_cvrp_1nn
 import argparse
 import csv
 import os
-
 
 ray.init(address="auto")
 np.random.seed(42)
@@ -21,6 +20,8 @@ parser.add_argument("--test", type=str, default="all", help="which test(s) to ru
 parser.add_argument("--seed", type=int, default=44, help="seed value")
 parser.add_argument("--sync_iters", type=int, default=1000, help="Check sync time every X iterations")
 parser.add_argument("--sync_time", type=int, default=2000, help="Sync with host every X ms")
+parser.add_argument("--num_instances", type=int, default=9, help="Liczba instancji do wygenerowania dla Testu 8")
+
 args = parser.parse_args()
 
 n = args.n
@@ -31,6 +32,7 @@ test_selection = args.test
 sync_iters = args.sync_iters
 sync_time = args.sync_time
 np.random.seed(args.seed)
+num_instances = args.num_instances
 # Parse test selection
 if test_selection.lower() == "all":
     tests_to_run = [1, 2, 3, 4, 5, 6]
@@ -290,11 +292,89 @@ if 7 in tests_to_run:
     with open(csv_file, mode="a", newline="") as f:
         writer = csv.writer(f)
         writer.writerow([n, C, "Test 7: Hybryda (Pary + Sync)", best_res, end_time, preparing_time, computing_time, ct])
-#start_time = time.time()
-#futures = [solve_city.remote(dist, C, i, 0, 999999999) for i in range(1, n)]
-#results = ray.get(futures)
-#end_time = time.time()-start_time
 
-#print("BF Najlepszy wynik:", min(results), " w czasie:", end_time)
+
+if 8 in tests_to_run:
+    print(f"=== Test 8: Porównanie Architektur (X={num_instances} instancji) ===")
+    print(f"Generowanie {num_instances} różnych instancji problemu CVRP...")
+
+    instances = []
+    seeds = [args.seed + k for k in range(num_instances)]
+
+    for s in seeds:
+        np.random.seed(s)
+        local_coords = np.random.rand(n, 2) * 10000
+        local_dist = np.zeros((n, n))
+        for r in range(n):
+            for c in range(n):
+                local_dist[r, c] = np.linalg.norm(local_coords[r] - local_coords[c])
+
+        _, greedy_cost = greedy_cvrp_1nn(local_dist, C)
+        instances.append({
+            "dist": local_dist,
+            "initial_bound": int(greedy_cost),
+            "seed": s
+        })
+
+    print("Wygenerowano")
+    print("-" * 60)
+
+
+    print(f"[Podejście A] Cluster Multi-thread (Test 7)")
+    print("Strategia: Sekwencyjne wykonywanie kolejnych instancji")
+
+    start_time_A = time.time()
+    results_A = []
+
+    for idx, inst in enumerate(instances):
+        tracker = BoundTracker.remote(inst["initial_bound"])
+        futures = []
+
+        for i in range(1, n):
+            for j in range(1, n):
+                if i != j:
+                    f = solve_city_pair_active_sync.options(num_cpus=1).remote(
+                        inst["dist"], C, i, j, 1, inst["initial_bound"], tracker, sync_iters, sync_time
+                    )
+                    futures.append(f)
+
+        res_raw = ray.get(futures)
+        best_cost = min([r[0] for r in res_raw])
+        results_A.append(best_res)
+        print(f" -> Instancja {idx + 1}/{num_instances} Wynik: {best_cost}")
+
+    time_A = time.time() - start_time_A
+    print(f"CZAS CAŁKOWITY PODEJŚCIA A: {time_A:.4f}s")
+    print("-" * 60)
+
+    print(f"[Podejście B] Node-Instance (Brak komunikacji, Izolacja)")
+    print("Równoległe wykonywanie kolejnych instancji")
+
+    start_time_B = time.time()
+    futures_B = []
+
+
+    for idx, inst in enumerate(instances):
+        f = solve_whole_instance_node_parallel.remote(
+            inst["dist"], C, 1, inst["initial_bound"]
+        )
+        futures_B.append(f)
+
+    results_raw_B = ray.get(futures_B)
+    results_B = results_raw_B
+
+    time_B = time.time() - start_time_B
+    print(f"CZAS CAŁKOWITY PODEJŚCIA B: {time_B:.4f}s")
+
+    print("=" * 60)
+    print(f"WYNIKI:")
+    print(f"Cluster Multi-thread (Latency): {time_A:.4f}s")
+    print(f"Node-Instance (Throughput):     {time_B:.4f}s")
+
+    with open(csv_file, mode="a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([n, C, f"Test 8A: Cluster MT (X={num_instances})", sum(results_A), time_A, 0, time_A, ct])
+        writer.writerow([n, C, f"Test 8B: Node Instance (X={num_instances})", sum(results_B), time_B, 0, time_B, ct])
+
 
 

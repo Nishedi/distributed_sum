@@ -152,6 +152,43 @@ public:
 };
 
 extern "C" {
+    double solve_complete_problem(double** c_mat, int n, int C, int cutting, int bound_value) {
+        if (n > 20) return 1e18;
+
+        double global_best = (double)bound_value;
+
+        for (int start_node = 1; start_node < n; start_node++) {
+
+            CVRP_BnB solver(c_mat, n, C, (int)global_best, nullptr, 0, 0);
+
+            bool* visited = new bool[n];
+            for (int i = 0; i < n; i++) visited[i] = false;
+
+            visited[0] = true;
+            visited[start_node] = true;
+
+            int route[20];
+            route[0] = 0;
+            route[1] = start_node;
+
+            solver.branch_and_bound(
+                route,
+                2,
+                visited,
+                1,
+                c_mat[0][start_node],
+                cutting != 0
+            );
+
+            if (solver.best_cost < global_best) {
+                global_best = solver.best_cost;
+            }
+
+            delete[] visited;
+        }
+
+        return global_best;
+    }
     double solve_generic(double** dist, int n, int C, int* start_route, int route_len, bool* visited, int load, double current_cost, int cutting, int bound_value, BoundCallback cb) {
         if (n > 20) return 1e18;
 

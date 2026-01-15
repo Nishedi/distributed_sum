@@ -236,5 +236,31 @@ def solve_city_pair_active_sync(dist_np, C, city1, city2, BnB, bound_value, boun
     return result, c_sync_counter.value, duration
 
 
+@ray.remote
+def solve_whole_instance_node_parallel(dist_np, C, BnB, bound_value):
+    """
+    Rozwiązuje całą instancję CVRP na jednym workerze (bez komunikacji sieciowej).
+    """
+    lib = ctypes.CDLL(LIB_PATH)
+
+    lib.solve_complete_problem.argtypes = [
+        ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+        ctypes.c_int,  # n
+        ctypes.c_int,  # C
+        ctypes.c_int,  # cutting
+        ctypes.c_int  # bound_value
+    ]
+    lib.solve_complete_problem.restype = ctypes.c_double
+
+    n = dist_np.shape[0]
+    c_mat = (ctypes.POINTER(ctypes.c_double) * n)()
+    for i in range(n):
+        c_mat[i] = (ctypes.c_double * n)(*dist_np[i])
+
+    result = lib.solve_complete_problem(c_mat, n, C, BnB, bound_value)
+
+    return result
+
+
 if __name__ == "__main__":
     run_distributed_bnb()
