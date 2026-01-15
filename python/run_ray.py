@@ -340,7 +340,7 @@ if 8 in tests_to_run:
 
         res_raw = ray.get(futures)
         best_cost = min([r[0] for r in res_raw])
-        results_A.append(best_res)
+        results_A.append(best_cost)
         print(f" -> Instancja {idx + 1}/{num_instances} Wynik: {best_cost}")
 
     time_A = time.time() - start_time_A
