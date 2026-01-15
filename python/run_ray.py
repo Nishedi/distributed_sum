@@ -35,13 +35,13 @@ np.random.seed(args.seed)
 num_instances = args.num_instances
 # Parse test selection
 if test_selection.lower() == "all":
-    tests_to_run = [1, 2, 3, 4, 5, 6]
+    tests_to_run = [1, 2, 3, 4, 5, 6, 7, 8]
 else:
     try:
         tests_to_run = [int(t.strip()) for t in test_selection.split(",")]
         # Validate test numbers
         for t in tests_to_run:
-            if t not in [1, 2, 3, 4, 5, 6,7]:
+            if t not in [1, 2, 3, 4, 5, 6, 7, 8]:
                 print(f"Error: Invalid test number {t}. Must be 1-6.")
                 sys.exit(1)
     except ValueError:
