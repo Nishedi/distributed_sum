@@ -109,7 +109,6 @@ public:
             double total_cost = current_cost + dist[route[route_len - 1]][0];
             if (total_cost < best_cost) {
                 best_cost = total_cost;
-                // Immediate update if we found a solution
                 if (callback != nullptr) {
                      callback(best_cost);
                 }
@@ -256,7 +255,6 @@ extern "C" {
             cutting!=0
         );
 
-        // ZAPISZ LICZNIK DO WSKAŹNIKA PRZEKAZANEGO Z PYTHONA
         if (out_syncs != nullptr) {
             *out_syncs = solver.syncs;
         }
@@ -265,16 +263,14 @@ extern "C" {
         delete[] visited;
         return result;
     }
-    // Nowa funkcja dla TESTU 7: Pary miast + Callback
+
     double solve_pair_with_callback(double** c_mat, int n, int C, int city1, int city2, int cutting, int bound_value, int* out_syncs, BoundCallback cb, int sync_iters, int sync_time) {
 
-        // Używamy tego samego konstruktora co w Teście 6
         CVRP_BnB solver(c_mat, n, C, bound_value, cb, sync_iters, sync_time);
 
         bool* visited = new bool[n];
         for (int i = 0; i < n; i++) visited[i] = false;
 
-        // Ustawiamy start trasy: 0 -> city1 -> city2
         visited[0] = true;
         visited[city1] = true;
         visited[city2] = true;
@@ -284,17 +280,16 @@ extern "C" {
         route[1] = city1;
         route[2] = city2;
 
-        // Startujemy z głębokości 3 (bo mamy już 3 miasta w trasie)
         solver.branch_and_bound(
             route,
-            3,                  // route_len
+            3,
             visited,
-            2,                  // current_load (2 miasta odwiedzone)
+            2,
             c_mat[0][city1] + c_mat[city1][city2], // current_cost
             cutting != 0
         );
 
-        // Zapisujemy liczbę synchronizacji
+
         if (out_syncs != nullptr) {
             *out_syncs = solver.syncs;
         }
@@ -306,51 +301,3 @@ extern "C" {
 
 } // extern "C"
 
-//int main() {
-//    srand(time(nullptr));
-//
-//    int ns[] = { 4,5,6,7,8,9,10,11,12,13,14,15 };
-//
-//    for (int idx = 0; idx < 12; idx++) {
-//        int n = ns[idx];
-//
-//        double** coords = new double* [n];
-//        double** dist = new double* [n];
-//        for (int i = 0; i < n; i++) {
-//            coords[i] = new double[2];
-//            dist[i] = new double[n];
-//        }
-//
-//        load_coordinates(coords, n);
-//        distance_matrix(coords, dist, n);
-//
-//        CVRP_BnB solver(dist, n, 5, 1e18);
-//
-//        bool* visited = new bool[n];
-//        for (int i = 0; i < n; i++) visited[i] = false;
-//        visited[0] = true;
-//
-//        int route[20];
-//        route[0] = 0;
-//
-//        clock_t start = clock();
-//        solver.branch_and_bound(route, 1, visited, 0, 0.0, true);
-//        double elapsed = double(clock() - start) / CLOCKS_PER_SEC;
-//
-//        cout << "BnB Computing for: " << n << endl;
-//        cout << "Best cost: " << solver.best_cost << endl;
-//        cout << "Time of computing: " << elapsed << endl;
-//        cout << "Checks: " << solver.checks << " Cuts: " << solver.cut << endl;
-//        cout << "-----------------------------" << endl;
-//
-//        delete[] visited;
-//        for (int i = 0; i < n; i++) {
-//            delete[] coords[i];
-//            delete[] dist[i];
-//        }
-//        delete[] coords;
-//        delete[] dist;
-//    }
-//
-//    return 0;
-//}
