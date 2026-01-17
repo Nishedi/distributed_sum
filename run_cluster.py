@@ -1,12 +1,13 @@
 from fabric import Connection
 from invoke.exceptions import UnexpectedExit
 import argparse
+import subprocess
 
 user = "cluster"
 
 parser = argparse.ArgumentParser(description="Starting cluster workers for Ray.")
 parser.add_argument("--threads", type=str, default="multithread", help="Mode of CPU's working threads: multithread or singlethread")
-parser.add_argument("--nodes", type=int, default=9, help="Number of nodes to start")
+parser.add_argument("--nodes", type=int, default=8, help="Number of nodes to start")
 parser.add_argument("--stop", action='store_true', help="Stop the Ray cluster instead of starting it")
 args = parser.parse_args()
 
