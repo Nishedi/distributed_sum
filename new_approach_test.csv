@@ -1,0 +1,40 @@
+n,C,method,best_cost,time_sec,preparing_time,computing_time,cluster_type
+17,5,Test 7: Hybryda (Pary + Sync),37170.0,14.310956001281738,0.14570116996765137,14.165255308151245,Cluster singlethread
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,165.13531351089478,0.16470575332641602,164.97060871124268,Cluster singlethread
+17,5,Test 7: Hybryda (Pary + Sync),37170.0,8.546294927597046,0.14310216903686523,8.403193235397339,Cluster multithread
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,71.92525696754456,0.14931273460388184,71.77594518661499,Cluster multithread
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,65.5488715171814,0.1463310718536377,65.40254092216492,Cluster multithread sync_iter:100 sync_times:100
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,69.59683084487915,0.1426694393157959,69.45416212081909,Cluster multithread sync_iter:100 sync_times:500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,74.16105079650879,0.15362906455993652,74.00742244720459,Cluster multithread sync_iter:100 sync_times:1000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,71.50725555419922,0.20094990730285645,71.3063063621521,Cluster multithread sync_iter:100 sync_times:1500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,71.45628237724304,0.150482177734375,71.3058021068573,Cluster multithread sync_iter:100 sync_times:2000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,71.16872358322144,0.1381514072418213,71.03057265281677,Cluster multithread sync_iter:100 sync_times:2500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,73.17796206474304,0.1829967498779297,72.99496650695801,Cluster multithread sync_iter:100 sync_times:3000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,70.76147603988647,0.14946770668029785,70.6120080947876,Cluster multithread sync_iter:500 sync_times:100
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,71.3536114692688,0.14417648315429688,71.20943522453308,Cluster multithread sync_iter:500 sync_times:500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,70.12690305709839,0.14146137237548828,69.9854428768158,Cluster multithread sync_iter:500 sync_times:1000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,70.88309025764465,0.14061808586120605,70.7424738407135,Cluster multithread sync_iter:500 sync_times:1500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,73.19060492515564,0.14684247970581055,73.04376268386841,Cluster multithread sync_iter:500 sync_times:2000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,72.73455023765564,0.1658613681793213,72.56868815422058,Cluster multithread sync_iter:500 sync_times:2500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,72.52671837806702,0.15015411376953125,72.37656331062317,Cluster multithread sync_iter:500 sync_times:3000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,73.64290380477905,0.14085912704467773,73.50204515457153,Cluster multithread sync_iter:1000 sync_times:100
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,70.37087869644165,0.1729879379272461,70.19789123535156,Cluster multithread sync_iter:1000 sync_times:500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,68.74839758872986,0.15608596801757812,68.59231209754944,Cluster multithread sync_iter:1000 sync_times:1000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,69.64868998527527,0.1495225429534912,69.4991672039032,Cluster multithread sync_iter:1000 sync_times:1500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,71.90787124633789,0.1415102481842041,71.76636052131653,Cluster multithread sync_iter:1000 sync_times:2000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,71.66668844223022,0.15403151512145996,71.5126576423645,Cluster multithread sync_iter:1000 sync_times:2500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,73.40960431098938,0.1487717628479004,73.2608335018158,Cluster multithread sync_iter:1000 sync_times:3000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,76.42480158805847,0.20120477676391602,76.22359704971313,Cluster multithread sync_iter:1500 sync_times:100
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,75.19837474822998,0.15661859512329102,75.04175686836243,Cluster multithread sync_iter:1500 sync_times:500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,67.08445310592651,0.1512618064880371,66.93319082260132,Cluster multithread sync_iter:1500 sync_times:1000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,69.51878666877747,0.15564417839050293,69.36314225196838,Cluster multithread sync_iter:1500 sync_times:1500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,70.49360084533691,0.15399646759033203,70.33960580825806,Cluster multithread sync_iter:1500 sync_times:2000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,73.08845090866089,0.16672396659851074,72.92172813415527,Cluster multithread sync_iter:1500 sync_times:2500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,67.3251724243164,0.23319101333618164,67.09198260307312,Cluster multithread sync_iter:1500 sync_times:3000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,68.2634425163269,0.14260578155517578,68.12083697319031,Cluster multithread sync_iter:2000 sync_times:100
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,68.25023007392883,0.14262723922729492,68.10760283470154,Cluster multithread sync_iter:2000 sync_times:500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,69.34409093856812,0.1493666172027588,69.19472527503967,Cluster multithread sync_iter:2000 sync_times:1000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,72.01718664169312,0.14955997467041016,71.8676266670227,Cluster multithread sync_iter:2000 sync_times:1500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,74.07874369621277,0.14010024070739746,73.93864369392395,Cluster multithread sync_iter:2000 sync_times:2000
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,66.60518217086792,0.14309358596801758,66.46208810806274,Cluster multithread sync_iter:2000 sync_times:2500
+18,5,Test 7: Hybryda (Pary + Sync),39471.0,72.81064200401306,0.14259028434753418,72.6680519580841,Cluster multithread sync_iter:2000 sync_times:3000
