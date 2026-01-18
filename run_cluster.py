@@ -120,9 +120,9 @@ stop = args.stop
 # Ustawiamy limit ZANIM uruchomimy venv i raya.
 # Używamy średnika (;), żeby błąd ulimit (jeśli wystąpi) nie zatrzymał reszty,
 # choć przy && byłoby bezpieczniej, ale ; gwarantuje próbę wykonania reszty.
-TEMP_DIR = "~/ray_tmp_data"
+TEMP_DIR = "$HOME/ray_tmp_data"
 mkdir_cmd = f"mkdir -p {TEMP_DIR}; "
-TEMP_DIR_host = "~/ray_tmp_data"
+TEMP_DIR_host = "$HOME/ray_tmp_data"
 mkdir_cmd_host = f"mkdir -p {TEMP_DIR_host}; "
 
 head_cmd = (
