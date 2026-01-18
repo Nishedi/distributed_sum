@@ -190,6 +190,7 @@ for host_id in range(0, nodes + 1):
 
         # Wykonanie komendy z ulimit na zdalnej maszynie
         result = c.run(cmd, hide=True)
+        print(cmd)
         print(f"[SUKCES] {host}: Ray uruchomiony (ulimit applied).")
 
     except UnexpectedExit as e:
