@@ -120,14 +120,16 @@ stop = args.stop
 # Ustawiamy limit ZANIM uruchomimy venv i raya.
 # Używamy średnika (;), żeby błąd ulimit (jeśli wystąpi) nie zatrzymał reszty,
 # choć przy && byłoby bezpieczniej, ale ; gwarantuje próbę wykonania reszty.
-TEMP_DIR = "/home/cluster/ray_tmp_data" 
+TEMP_DIR = "/home/cluster/ray_tmp_data"
 mkdir_cmd = f"mkdir -p {TEMP_DIR}; "
+TEMP_DIR_host = "/home/kpempera/ray_tmp_data"
+mkdir_cmd_host = f"mkdir -p {TEMP_DIR_host}; "
 
 head_cmd = (
-    f"ulimit -n 65536; {mkdir_cmd}"  # Limit + tworzenie katalogu
+    f"ulimit -n 65536; {mkdir_cmd_host}"  # Limit + tworzenie katalogu
     "source ~/distributed_sum/venv/bin/activate && "
     "ray stop; "
-    f"ray start --head --port=6379 --num-cpus 0 --temp-dir={TEMP_DIR}" # <-- DODANO --temp-dir
+    f"ray start --head --port=6379 --num-cpus 0 --temp-dir={TEMP_DIR_host}" # <-- DODANO --temp-dir
 )
 
 if stop:
@@ -175,10 +177,9 @@ base_cmd = (
 )
 
 if threads == "multithread":
-    cmd = base_cmd + "ray start --address='156.17.41.136:6379'"
+    cmd = base_cmd + f"ray start --address='156.17.41.136:6379' --temp-dir={TEMP_DIR}"
 else:
-    cmd = base_cmd + "ray start --address='156.17.41.136:6379' --num-cpus 1"
-
+    cmd = base_cmd + f"ray start --address='156.17.41.136:6379' --num-cpus 1 --temp-dir={TEMP_DIR}"
 print(f"Rozpoczynam podłączanie workerów do klastra Ray...")
 
 for host_id in range(0, nodes + 1):
