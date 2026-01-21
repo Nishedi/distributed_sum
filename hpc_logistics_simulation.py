@@ -154,16 +154,16 @@ if __name__ == "__main__":
     all_data = []
 
     # 1. Steady State
-    df_steady = run_experiment("Steady State", generator_steady_state, task_count=50)
+    df_steady = run_experiment("Steady State", generator_steady_state, task_count=500)
     all_data.append(df_steady)
 
     # 2. Burst Traffic
-    df_burst = run_experiment("Burst Traffic", generator_burst_traffic, task_count=50)
+    df_burst = run_experiment("Burst Traffic", generator_burst_traffic, task_count=500)
     all_data.append(df_burst)
 
     # 3. Straggler Effect
     # Mniejsza liczba zadań, żeby efekt był wyraźny w logach
-    df_straggler = run_experiment("Straggler Effect", generator_straggler_effect, task_count=15)
+    df_straggler = run_experiment("Straggler Effect", generator_straggler_effect, task_count=500)
     all_data.append(df_straggler)
 
     # --- AGREGACJA WYNIKÓW I RAPORTOWANIE ---
