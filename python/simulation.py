@@ -41,7 +41,7 @@ class Task:
         self.status = "PENDING"
         self.best_cost = float('inf')
 
-   def __lt__(self, other):
+    def __lt__(self, other):
         prio_map = {"hard": 0, "medium": 1, "easy": 2}
         my_prio = prio_map[self.difficulty]
         other_prio = prio_map[other.difficulty]
