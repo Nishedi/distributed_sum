@@ -21,3 +21,5 @@ n,C,method,best_cost,time_sec,preparing_time,computing_time,cluster_type
 13,5,Test 8B: Node Instance (X=500),15037619.0,241.2393867969513,0,241.2393867969513,Cluster singlethread
 14,5,Test 8A: Cluster MT (X=500),15749503.0,1152.7553300857544,0,1152.7553300857544,Cluster singlethread
 14,5,Test 8B: Node Instance (X=500),15749503.0,1172.0954535007477,0,1172.0954535007477,Cluster singlethread
+15,5,Test 8A: Cluster MT (X=500),16394064.0,4220.9125599861145,0,4220.9125599861145,Cluster singlethread
+15,5,Test 8B: Node Instance (X=500),16394064.0,5982.324079275131,0,5982.324079275131,Cluster singlethread
