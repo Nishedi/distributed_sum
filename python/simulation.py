@@ -106,7 +106,6 @@ def run_simulation(args):
     print(f"Godziny pracy: {SIM_START_HOUR}:00 - {SIM_END_HOUR}:00")
     print(f"Zadań na godzinę: {tasks_per_hour}")
     print(f"Skalowanie czasu: 1 min realna = {args.speed} h symulacyjna")
-    print(f"Priorytet: HARD > MEDIUM > EASY")
 
     all_tasks = generate_schedule(tasks_per_hour, TOTAL_SIM_HOURS)
     print(f"Wygenerowano łącznie {len(all_tasks)} zadań na cały dzień.")
@@ -124,7 +123,7 @@ def run_simulation(args):
     with open(csv_file, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["task_id", "difficulty", "n", "arrival_sim", "start_sim", "end_sim", "status", "cost",
-                         "real_duration_sec", "waiting_time_sec"])
+                         "real_duration_sec", "waiting_time_sec", "time_in_system_sec"])
 
     try:
         while True:
@@ -230,7 +229,7 @@ def run_simulation(args):
                             format_sim_time(task.arrival_time_offset),
                             format_sim_time(task.start_time),
                             format_sim_time(task.end_time),
-                            "COMPLETED", best, f"{real_duration:.4f}", f"{(task.start_time - task.arrival_time_offset):.2f}"
+                            "COMPLETED", best, f"{real_duration:.4f}", f"{(task.start_time - task.arrival_time_offset):.2f}, f""{(task.end_time - task.arrival_time_offset):.2f}"
                         ])
 
                     tasks_to_remove.append(t_id)
