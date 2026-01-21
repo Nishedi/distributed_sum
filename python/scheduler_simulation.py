@@ -1,354 +1,110 @@
-# import ray
-# import time
-# import numpy as np
-# import argparse
-# import csv
-# import os
-# from dataclasses import dataclass, field
-# from typing import List, Dict
-# from queue import Queue
-#
-# # Import your existing solver logic
-# from ray_cvrp import solve_whole_instance_node_parallel, solve_city_pair_active_sync, BoundTracker
-# from greedy import greedy_cvrp_1nn  # Assuming this exists based on your imports, otherwise we can mock it
-#
-#
-# # --- KONFIGURACJA SYMULACJI ---
-#
-# @dataclass
-# class Task:
-#     id: int
-#     n: int  # Liczba miast (trudność)
-#     C: int  # Pojemność
-#     seed: int  # Seed dla powtarzalności instancji
-#     arrival_time: float  # Czas w sekundach od startu symulacji, kiedy zadanie trafia do kolejki
-#
-#     # Metryki (wypełniane po wykonaniu)
-#     start_time: float = 0.0
-#     finish_time: float = 0.0
-#
-#     @property
-#     def wait_time(self):
-#         return max(0.0, self.start_time - self.arrival_time)
-#
-#     @property
-#     def service_time(self):
-#         return self.finish_time - self.start_time
-#
-#     @property
-#     def turnaround_time(self):
-#         return self.finish_time - self.arrival_time
-#
-#
-# class WorkloadGenerator:
-#     @staticmethod
-#     def generate_instance_data(n, seed):
-#         """Generuje dane instancji deterministycznie na podstawie seeda."""
-#         np.random.seed(seed)
-#         coords = np.random.rand(n, 2) * 10000
-#         dist = np.zeros((n, n))
-#         for i in range(n):
-#             for j in range(n):
-#                 dist[i, j] = np.linalg.norm(coords[i] - coords[j])
-#         return dist
-#
-#     @staticmethod
-#     def create_scenario(scenario_type: str, num_tasks: int, base_n: int, seed_start: int):
-#         tasks = []
-#         current_arrival = 0.0
-#
-#         print(f"Generowanie scenariusza: {scenario_type.upper()}")
-#
-#         if scenario_type == "steady":
-#             # Stały napływ: Zadania pojawiają się co X sekund
-#             # Dobieramy interwał tak, by system się nie "zatkał" natychmiast, ale miał co robić
-#             interval = 2.0
-#             for i in range(num_tasks):
-#                 tasks.append(Task(id=i, n=base_n, C=5, seed=seed_start + i, arrival_time=current_arrival))
-#                 current_arrival += interval
-#
-#         elif scenario_type == "burst":
-#             # Burst: Wszystkie zadania wpadają niemal naraz na początku
-#             for i in range(num_tasks):
-#                 tasks.append(Task(id=i, n=base_n, C=5, seed=seed_start + i, arrival_time=current_arrival))
-#                 current_arrival += 0.1  # Bardzo krótki odstęp
-#
-#         elif scenario_type == "straggler":
-#             # Straggler: Małe zadania, jedno OGROMNE w środku, potem małe
-#             # Zadanie 0-3: Małe
-#             # Zadanie 4: Straggler (duże N)
-#             # Zadanie 5-9: Małe
-#             for i in range(num_tasks):
-#                 difficulty = base_n
-#                 if i == num_tasks // 2:  # Środkowe zadanie to Straggler
-#                     difficulty = base_n + 4  # Znacznie trudniejsze (w CVRP n+4 to wykładniczy skok)
-#                     print(f" -> Zadanie {i} będzie 'Stragglerem' (n={difficulty})")
-#
-#                 tasks.append(Task(id=i, n=difficulty, C=5, seed=seed_start + i, arrival_time=current_arrival))
-#                 current_arrival += 1.0
-#
-#         return tasks
-#
-#
-# # --- SILNIKI WYKONAWCZE (SCHEDULERY) ---
-#
-# def run_approach_a_cluster_exclusive(tasks: List[Task], sync_iters=1000, sync_time=2000):
-#     """
-#     Podejście A: Cluster Multi-thread.
-#     Strategia: Latency-Oriented.
-#     FIFO. Pobiera jedno zadanie, rzuca na nie CAŁY klaster (wszystkie pary miast), czeka na wynik, bierze następne.
-#     Blokuje kolejkę, ale rozwiązuje pojedyncze zadanie bardzo szybko.
-#     """
-#     results = []
-#     simulation_start_real = time.time()
-#
-#     # Kolejka zadań oczekujących (symulacja przyjścia)
-#     queue = Queue()
-#     next_task_idx = 0
-#     total_tasks = len(tasks)
-#
-#     print(f"\n[A] Start symulacji Cluster Exclusive (Latency). Liczba zadań: {total_tasks}")
-#
-#     processed_count = 0
-#
-#     while processed_count < total_tasks:
-#         current_sim_time = time.time() - simulation_start_real
-#
-#         # 1. Sprawdź czy nadeszły nowe zadania
-#         while next_task_idx < total_tasks and tasks[next_task_idx].arrival_time <= current_sim_time:
-#             print(
-#                 f" [t={current_sim_time:.2f}s] Zadanie {tasks[next_task_idx].id} (n={tasks[next_task_idx].n}) wpadło do kolejki.")
-#             queue.put(tasks[next_task_idx])
-#             next_task_idx += 1
-#
-#         # 2. Jeśli mamy zadanie i klaster jest wolny (w tym podejściu zawsze jest "wolny" jak skończył poprzednie)
-#         if not queue.empty():
-#             task = queue.get()
-#
-#             # Rejestracja startu
-#             task.start_time = time.time() - simulation_start_real
-#             print(f" [t={task.start_time:.2f}s] Uruchamianie zadania {task.id} na całym klastrze...")
-#
-#             # --- LOGIKA ROZWIĄZYWANIA (Z Ray Cvrp) ---
-#             dist = WorkloadGenerator.generate_instance_data(task.n, task.seed)
-#             _, greedy_cost = greedy_cvrp_1nn(dist, task.C)
-#             initial_bound = int(greedy_cost)
-#
-#             # Tworzymy Tracker dla TEGO konkretnego zadania
-#             tracker = BoundTracker.remote(initial_bound)
-#
-#             # Generujemy pod-zadania (pary miast) - to zajmuje cały klaster
-#             futures = []
-#             for i in range(1, task.n):
-#                 for j in range(1, task.n):
-#                     if i != j:
-#                         # options(num_cpus=1) zapewnia że worker bierze 1 CPU,
-#                         # więc przy wielu parach zajmiemy wszystkie rdzenie klastra
-#                         f = solve_city_pair_active_sync.options(num_cpus=1).remote(
-#                             dist, task.C, i, j, 1, initial_bound, tracker, sync_iters, sync_time
-#                         )
-#                         futures.append(f)
-#
-#             # Czekamy na WSZYSTKIE pary (Barrier)
-#             _ = ray.get(futures)
-#
-#             # Pobieramy ostateczny wynik
-#             final_cost = ray.get(tracker.get_bound.remote())
-#             # -----------------------------------------
-#
-#             task.finish_time = time.time() - simulation_start_real
-#             print(
-#                 f" [t={task.finish_time:.2f}s] Zadanie {task.id} zakończone. Koszt: {final_cost}. Czas obsługi: {task.service_time:.2f}s")
-#             results.append(task)
-#             processed_count += 1
-#
-#         else:
-#             # Brak zadań w kolejce, czekamy na nadejście
-#             time.sleep(0.1)
-#
-#     return results
-#
-#
-# def run_approach_b_node_parallel(tasks: List[Task], max_concurrent_tasks=4):
-#     """
-#     Podejście B: Node-Instance Isolation.
-#     Strategia: Throughput-Oriented.
-#     Każde zadanie dostaje 1 CPU i liczy się niezależnie.
-#     Nie blokujemy kolejki - jeśli są wolne sloty (CPU), bierzemy kolejne zadanie.
-#     """
-#     results = []
-#     simulation_start_real = time.time()
-#
-#     queue = Queue()
-#     next_task_idx = 0
-#     total_tasks = len(tasks)
-#
-#     # Śledzenie aktywnych zadań: słownik {future: task_object}
-#     active_futures = {}
-#
-#     print(f"\n[B] Start symulacji Node Parallel (Throughput). Max concurrency: {max_concurrent_tasks}")
-#
-#     while len(results) < total_tasks:
-#         current_sim_time = time.time() - simulation_start_real
-#
-#         # 1. Sprawdź czy nadeszły nowe zadania
-#         while next_task_idx < total_tasks and tasks[next_task_idx].arrival_time <= current_sim_time:
-#             print(
-#                 f" [t={current_sim_time:.2f}s] Zadanie {tasks[next_task_idx].id} (n={tasks[next_task_idx].n}) wpadło do kolejki.")
-#             queue.put(tasks[next_task_idx])
-#             next_task_idx += 1
-#
-#         # 2. Sprawdź czy coś się zakończyło
-#         if active_futures:
-#             # ray.wait zwraca zakończone (ready) i niezakończone (not_ready)
-#             # timeout=0 oznacza sprawdzenie natychmiastowe bez blokowania
-#             ready_ids, not_ready_ids = ray.wait(list(active_futures.keys()), num_returns=len(active_futures), timeout=0)
-#
-#             for r_id in ready_ids:
-#                 task = active_futures.pop(r_id)
-#                 task.finish_time = time.time() - simulation_start_real
-#                 cost = ray.get(r_id)  # Pobranie wyniku
-#                 print(
-#                     f" [t={task.finish_time:.2f}s] Zadanie {task.id} zakończone. Koszt: {cost}. Czas obsługi: {task.service_time:.2f}s")
-#                 results.append(task)
-#
-#         # 3. Jeśli są wolne sloty i zadania w kolejce -> Uruchom
-#         while len(active_futures) < max_concurrent_tasks and not queue.empty():
-#             task = queue.get()
-#
-#             task.start_time = time.time() - simulation_start_real
-#             print(f" [t={task.start_time:.2f}s] Przypisywanie zadania {task.id} do wolnego wątku...")
-#
-#             # --- LOGIKA ROZWIĄZYWANIA (Node Parallel) ---
-#             dist = WorkloadGenerator.generate_instance_data(task.n, task.seed)
-#             _, greedy_cost = greedy_cvrp_1nn(dist, task.C)
-#             initial_bound = int(greedy_cost)
-#
-#             # Uruchamiamy CAŁĄ instancję na jednym workerze
-#             future = solve_whole_instance_node_parallel.options(num_cpus=1).remote(
-#                 dist, task.C, 1, initial_bound
-#             )
-#             # --------------------------------------------
-#
-#             active_futures[future] = task
-#
-#         # Krótki sleep, żeby nie spalić CPU pętlą while (symulacja czasu)
-#         time.sleep(0.1)
-#
-#     return results
-#
-#
-# def save_simulation_results(filename, scenario_name, method_name, results: List[Task]):
-#     file_exists = os.path.isfile(filename)
-#     with open(filename, mode="a", newline="") as f:
-#         writer = csv.writer(f)
-#         if not file_exists:
-#             writer.writerow(["scenario", "method", "task_id", "n", "arrival_ts", "start_ts", "finish_ts", "wait_time",
-#                              "service_time", "turnaround_time"])
-#
-#         for t in results:
-#             writer.writerow([
-#                 scenario_name,
-#                 method_name,
-#                 t.id,
-#                 t.n,
-#                 f"{t.arrival_time:.4f}",
-#                 f"{t.start_time:.4f}",
-#                 f"{t.finish_time:.4f}",
-#                 f"{t.wait_time:.4f}",
-#                 f"{t.service_time:.4f}",
-#                 f"{t.turnaround_time:.4f}"
-#             ])
-#
-#
-# def print_summary(results: List[Task]):
-#     avg_wait = np.mean([t.wait_time for t in results])
-#     avg_service = np.mean([t.service_time for t in results])
-#     avg_turnaround = np.mean([t.turnaround_time for t in results])
-#     makespan = max([t.finish_time for t in results])
-#
-#     print("-" * 40)
-#     print(f"RAPORT KOŃCOWY")
-#     print("-" * 40)
-#     print(f"Makespan (Całkowity czas): {makespan:.4f} s")
-#     print(f"Średni czas oczekiwania (Queue): {avg_wait:.4f} s")
-#     print(f"Średni czas obsługi (Compute):   {avg_service:.4f} s")
-#     print(f"Średni czas przejścia (Total):   {avg_turnaround:.4f} s")
-#     print("-" * 40)
-#
-#
-# # --- MAIN ---
-#
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description="HPC Scheduler Simulation for CVRP")
-#     parser.add_argument("--scenario", type=str, default="steady", choices=["steady", "burst", "straggler"],
-#                         help="Typ ruchu zadań")
-#     parser.add_argument("--tasks", type=int, default=5, help="Liczba zadań w scenariuszu")
-#     parser.add_argument("--n", type=int, default=13, help="Bazowy rozmiar problemu (liczba miast)")
-#     parser.add_argument("--method", type=str, default="A", choices=["A", "B"],
-#                         help="A=ClusterExclusive (Latency), B=NodeParallel (Throughput)")
-#     parser.add_argument("--cpus", type=int, default=4, help="Liczba dostępnych slotów dla metody B")
-#     parser.add_argument("--out", type=str, default="simulation_results.csv", help="Plik wynikowy")
-#
-#     args = parser.parse_args()
-#
-#     # Inicjalizacja Ray
-#     ray.init(address="auto", ignore_reinit_error=True)
-#
-#     # 1. Generowanie scenariusza
-#     tasks = WorkloadGenerator.create_scenario(args.scenario, args.tasks, args.n, seed_start=42)
-#
-#     # 2. Uruchomienie wybranego schedulera
-#     if args.method == "A":
-#         processed_tasks = run_approach_a_cluster_exclusive(tasks)
-#         method_full_name = "Approach A (Latency)"
-#     else:
-#         processed_tasks = run_approach_b_node_parallel(tasks, max_concurrent_tasks=args.cpus)
-#         method_full_name = "Approach B (Throughput)"
-#
-#     # 3. Zapis i raport
-#     save_simulation_results(args.out, args.scenario, method_full_name, processed_tasks)
-#     print_summary(processed_tasks)
-
 import ray
 import time
 import numpy as np
 import argparse
 import csv
 import os
+import random
 from dataclasses import dataclass, field
-from typing import List, Dict
-from queue import Queue
+from queue import PriorityQueue
+from typing import List
 
-
+# Import solverów z istniejących plików
 from ray_cvrp import solve_whole_instance_node_parallel, solve_city_pair_active_sync, BoundTracker
 from greedy import greedy_cvrp_1nn
 
-@dataclass
+
+@dataclass(order=True)
 class Task:
-    id: int
-    n: int
-    C: int
-    seed: int
-    arrival_time: float
+    # PriorityQueue w Pythonie sortuje rosnąco.
+    # Żeby priorytetyzować TRUDNE (duże N), jako priorytet ustawiamy -N (ujemne N).
+    priority: int
 
-    start_time: float = 0.0
-    finish_time: float = 0.0
+    id: int = field(compare=False)
+    n: int = field(compare=False)
+    C: int = field(compare=False)
+    seed: int = field(compare=False)
 
-    @property
-    def wait_time(self):
-        return max(0.0, self.start_time - self.arrival_time)
+    # Czas symulacyjny (godziny, np. 8.5 to 8:30)
+    sim_arrival_hour: float = field(compare=False)
+
+    # Czas rzeczywisty (sekundy od startu skryptu)
+    real_arrival_time: float = field(compare=False, default=0.0)
+
+    # Metryki
+    real_start_time: float = field(compare=False, default=0.0)
+    real_finish_time: float = field(compare=False, default=0.0)
+    completed_on_time: bool = field(compare=False, default=True)
 
     @property
     def service_time(self):
-        return self.finish_time - self.start_time
-
-    @property
-    def turnaround_time(self):
-        return self.finish_time - self.arrival_time
+        return self.real_finish_time - self.real_start_time
 
 
-class WorkloadGenerator:
+class DayWorkloadGenerator:
+    @staticmethod
+    def generate_day_schedule(
+            tasks_per_hour: int,
+            start_hour: int,
+            end_hour: int,
+            sim_hour_duration_sec: float,
+            probs: dict,
+            seed: int
+    ):
+        """Generuje harmonogram na cały dzień z góry."""
+        np.random.seed(seed)
+        random.seed(seed)
+
+        tasks = []
+        task_counter = 0
+
+        # Definicje zakresów trudności
+        ranges = {
+            "easy": (11, 12),
+            "medium": (13, 14),
+            "hard": (15, 16)
+        }
+
+        # Iterujemy po każdej godzinie pracy (np. 8, 9, ..., 17)
+        for h in range(start_hour, end_hour):
+            for _ in range(tasks_per_hour):
+                # 1. Losowanie trudności zgodnie z zadanym procentem
+                r = random.random()
+                if r < probs['easy']:
+                    cat = "easy"
+                elif r < probs['easy'] + probs['medium']:
+                    cat = "medium"
+                else:
+                    cat = "hard"
+
+                n = random.randint(ranges[cat][0], ranges[cat][1])
+
+                # 2. Losowanie czasu wewnątrz godziny (np. 8:15, 8:43)
+                # Offset w godzinach (0.0 - 1.0)
+                minute_offset = random.random()
+                sim_arrival = h + minute_offset
+
+                # Przeliczenie na czas rzeczywisty, w którym skrypt ma "wpuścić" zadanie
+                # Czas 0.0 w symulacji to start_hour
+                real_arrival = (sim_arrival - start_hour) * sim_hour_duration_sec
+
+                # Priorytet: -n (żeby największe N schodziły pierwsze)
+                t = Task(
+                    priority=-n,
+                    id=task_counter,
+                    n=n,
+                    C=5,
+                    seed=seed + task_counter,
+                    sim_arrival_hour=sim_arrival,
+                    real_arrival_time=real_arrival
+                )
+                tasks.append(t)
+                task_counter += 1
+
+        # Sortujemy zadania po czasie przyjścia, żeby symulator brał je chronologicznie
+        tasks.sort(key=lambda x: x.real_arrival_time)
+        return tasks
+
     @staticmethod
     def generate_instance_data(n, seed):
         np.random.seed(seed)
@@ -359,243 +115,237 @@ class WorkloadGenerator:
                 dist[i, j] = np.linalg.norm(coords[i] - coords[j])
         return dist
 
-    @staticmethod
-    def get_difficulty_distribution(num_tasks, dist_type, n_min, n_max, seed):
-        np.random.seed(seed)
 
-        if dist_type == "constant":
-            return [n_min] * num_tasks
-
-        elif dist_type == "uniform":
-            return np.random.randint(n_min, n_max + 1, num_tasks).tolist()
-
-        elif dist_type == "skewed_easy":
-            samples = []
-            for _ in range(num_tasks):
-                if np.random.random() < 0.8:
-                    n = np.random.randint(n_min, n_min + 2)
-                else:
-                    n = np.random.randint(n_min + 2, n_max + 1)
-                samples.append(n)
-            return samples
-
-        elif dist_type == "skewed_hard":
-            return np.random.randint(n_max - 2, n_max + 1, num_tasks).tolist()
-
-        return [n_min] * num_tasks
-
-    @staticmethod
-    def create_scenario(arrival_pattern: str, dist_type: str, num_tasks: int, n_min: int, n_max: int, seed_start: int,
-                        malicious_idx: int = -1):
-        tasks = []
-        current_arrival = 0.0
-
-        difficulties = WorkloadGenerator.get_difficulty_distribution(num_tasks, dist_type, n_min, n_max, seed_start)
-
-        if malicious_idx >= 0 and malicious_idx < num_tasks:
-            difficulties[malicious_idx] = n_max + 3
-            print(f" -> WSTRZYKNIĘTO ZADANIE ZŁOŚLIWE: ID={malicious_idx}, N={difficulties[malicious_idx]}")
-
-        print(f"Generowanie scenariusza: Pattern={arrival_pattern.upper()}, Diff={dist_type.upper()}")
-
-        for i in range(num_tasks):
-            n = difficulties[i]
-
-            if arrival_pattern == "steady":
-                tasks.append(Task(id=i, n=n, C=5, seed=seed_start + i, arrival_time=current_arrival))
-                current_arrival += 3.0
-
-            elif arrival_pattern == "rapid":
-                tasks.append(Task(id=i, n=n, C=5, seed=seed_start + i, arrival_time=current_arrival))
-                current_arrival += 0.5
-
-            elif arrival_pattern == "burst":
-                tasks.append(Task(id=i, n=n, C=5, seed=seed_start + i, arrival_time=current_arrival))
-                current_arrival += 0.05
-
-        return tasks
+def format_sim_time(sim_hour):
+    """Konwertuje 8.5 -> '08:30'"""
+    h = int(sim_hour)
+    m = int((sim_hour - h) * 60)
+    return f"{h:02d}:{m:02d}"
 
 
+# --- SYMULATOR ---
 
-def run_approach_a_cluster_exclusive(tasks: List[Task], sync_iters=1000, sync_time=2000):
+@ray.remote
+def solve_method_A_full_cluster(dist, n, C, initial_bound, sync_iters=1000, sync_time=2000):
+    """
+    LOGIKA TESTU 8A (Cluster Multi-thread).
+    To zadanie działa jako orkiestrator. Nie zajmuje CPU obliczeniowego (num_cpus=0),
+    ale spawnuje setki pod-zadań (pary miast), które zajmują CAŁY klaster.
+    """
+    # 1. Lokalny tracker (tak jak w Test 8A)
+    tracker = BoundTracker.remote(initial_bound)
+    futures = []
+
+    # 2. Generowanie par (Sub-tasks)
+    # options(num_cpus=1) -> każde pod-zadanie bierze 1 rdzeń
+    # Ponieważ par jest N*(N-1) (np. 150+), zajmą wszystkie rdzenie w klastrze natychmiast.
+    for i in range(1, n):
+        for j in range(1, n):
+            if i != j:
+                f = solve_city_pair_active_sync.options(num_cpus=1).remote(
+                    dist, C, i, j, 1, initial_bound, tracker, sync_iters, sync_time
+                )
+                futures.append(f)
+
+    # 3. Synchronizacja - czekamy aż WSZYSTKIE pary skończą
+    # To blokuje ten orkiestrator, ale Ray w tle wykonuje pary na workerach.
+    ray.get(futures)
+
+    # 4. Pobranie wyniku
+    final_cost = ray.get(tracker.get_bound.remote())
+    return final_cost
+
+
+# --- GŁÓWNA PĘTLA SYMULACJI ---
+
+def run_day_simulation(
+        tasks: List[Task],
+        method: str,
+        sim_hour_duration: float,
+        start_hour: int,
+        end_hour: int,
+        cpus_for_b: int = 4
+):
     results = []
-    simulation_start_real = time.time()
-    queue = Queue()
-    next_task_idx = 0
-    total_tasks = len(tasks)
-
-    print(f"\n[A] Start symulacji Cluster Exclusive (Latency). Zadania: {total_tasks}")
-    processed_count = 0
-
-    while processed_count < total_tasks:
-        current_sim_time = time.time() - simulation_start_real
-        while next_task_idx < total_tasks and tasks[next_task_idx].arrival_time <= current_sim_time:
-            queue.put(tasks[next_task_idx])
-            next_task_idx += 1
-
-        if not queue.empty():
-            task = queue.get()
-            task.start_time = time.time() - simulation_start_real
-            print(f" [t={task.start_time:.2f}s] Start Task {task.id} (n={task.n})...")
-
-            dist = WorkloadGenerator.generate_instance_data(task.n, task.seed)
-            _, greedy_cost = greedy_cvrp_1nn(dist, task.C)
-            initial_bound = int(greedy_cost)
-            tracker = BoundTracker.remote(initial_bound)
-
-            futures = []
-            for i in range(1, task.n):
-                for j in range(1, task.n):
-                    if i != j:
-                        f = solve_city_pair_active_sync.options(num_cpus=1).remote(
-                            dist, task.C, i, j, 1, initial_bound, tracker, sync_iters, sync_time
-                        )
-                        futures.append(f)
-            _ = ray.get(futures)  # Barrier
-
-            task.finish_time = time.time() - simulation_start_real
-            print(f" [t={task.finish_time:.2f}s] Koniec Task {task.id}. Czas: {task.service_time:.2f}s")
-            results.append(task)
-            processed_count += 1
-        else:
-            time.sleep(0.1)
-    return results
-
-
-def run_approach_b_node_parallel(tasks: List[Task], max_concurrent_tasks=4):
-    results = []
-    simulation_start_real = time.time()
-    queue = Queue()
-    next_task_idx = 0
-    total_tasks = len(tasks)
+    queue = PriorityQueue()
     active_futures = {}
 
-    print(f"\n[B] Start symulacji Node Parallel (Throughput). Max concurrency: {max_concurrent_tasks}")
+    total_tasks = len(tasks)
+    next_task_idx = 0
+    start_time_real = time.time()
+
+    # LIMIT WSPÓŁBIEŻNOŚCI (Kluczowa różnica A vs B)
+    if method == "A":
+        # Podejście A: 1 Zadanie = Cały klaster.
+        # Nie pozwalamy na więcej niż 1 zadanie główne naraz.
+        max_concurrent_tasks = 1
+    else:
+        # Podejście B: Izolacja.
+        # Pozwalamy na tyle zadań, ile mamy CPU.
+        max_concurrent_tasks = cpus_for_b
+
+    print(f"\nSTART SYMULACJI [{method}]")
+    print(f"Max Concurrent Tasks: {max_concurrent_tasks}")
+    print(f"Godziny pracy: {start_hour}:00 - {end_hour}:00 (Ratio: 1h = {sim_hour_duration}s)")
+    print("-" * 60)
 
     while len(results) < total_tasks:
-        current_sim_time = time.time() - simulation_start_real
+        now_real = time.time() - start_time_real
+        current_sim_hour = start_hour + (now_real / sim_hour_duration)
 
-        while next_task_idx < total_tasks and tasks[next_task_idx].arrival_time <= current_sim_time:
-            queue.put(tasks[next_task_idx])
+        # 1. ARRIVAL: Nowe zadania wpadają do kolejki
+        while next_task_idx < total_tasks and tasks[next_task_idx].real_arrival_time <= now_real:
+            task = tasks[next_task_idx]
+            print(
+                f" [{format_sim_time(task.sim_arrival_hour)}] NOWE: ID#{task.id} (N={task.n}) -> Kolejka (Rozmiar: {queue.qsize() + 1})")
+            queue.put(task)
             next_task_idx += 1
 
+        # 2. FINISH: Odbiór wyników
         if active_futures:
+            # Sprawdzamy co się skończyło
             ready_ids, _ = ray.wait(list(active_futures.keys()), num_returns=len(active_futures), timeout=0)
+
             for r_id in ready_ids:
                 task = active_futures.pop(r_id)
-                task.finish_time = time.time() - simulation_start_real
-                print(f" [t={task.finish_time:.2f}s] Koniec Task {task.id}. Czas: {task.service_time:.2f}s")
+                task.real_finish_time = time.time() - start_time_real
+
+                # Czy zdążył przed fajrantem?
+                finish_sim_hour = start_hour + (task.real_finish_time / sim_hour_duration)
+                task.completed_on_time = (finish_sim_hour <= end_hour)
+                status = "OK" if task.completed_on_time else "PO GODZINACH"
+
+                print(
+                    f"   -> KONIEC: ID#{task.id} o {format_sim_time(finish_sim_hour)}. Czas: {task.service_time:.2f}s. [{status}]")
                 results.append(task)
 
+        # 3. SCHEDULING: Uruchamianie nowych zadań
+        # Sprawdzamy czy mamy wolny "slot" (dla A slot jest jeden na cały klaster!)
         while len(active_futures) < max_concurrent_tasks and not queue.empty():
             task = queue.get()
-            task.start_time = time.time() - simulation_start_real
-            print(f" [t={task.start_time:.2f}s] Start Task {task.id} (n={task.n}) na wątku...")
 
-            dist = WorkloadGenerator.generate_instance_data(task.n, task.seed)
+            task.real_start_time = time.time() - start_time_real
+            start_sim_hour = start_hour + (task.real_start_time / sim_hour_duration)
+
+            print(f" [START] ID#{task.id} (N={task.n}) o {format_sim_time(start_sim_hour)}...")
+
+            # Generowanie danych
+            dist = DayWorkloadGenerator.generate_instance_data(task.n, task.seed)
             _, greedy_cost = greedy_cvrp_1nn(dist, task.C)
             initial_bound = int(greedy_cost)
 
-            future = solve_whole_instance_node_parallel.options(num_cpus=1).remote(
-                dist, task.C, 1, initial_bound
-            )
-            active_futures[future] = task
+            if method == "A":
+                # --- PODEJŚCIE A: PEŁNY KLASTER ---
+                # Uruchamiamy orkiestratora. Dajemy num_cpus=0 dla orkiestratora,
+                # żeby nie blokował slotu, bo on sam tylko odpala pod-zadania.
+                # Pod-zadania (pary) zjedzą cały klaster (num_cpus=1 każde).
+                future = solve_method_A_full_cluster.options(num_cpus=0).remote(
+                    dist, task.n, task.C, initial_bound
+                )
+                active_futures[future] = task
 
-        time.sleep(0.1)
+            else:
+                # --- PODEJŚCIE B: IZOLACJA (NODE PARALLEL) ---
+                # 1 instancja = 1 CPU.
+                future = solve_whole_instance_node_parallel.options(num_cpus=1).remote(
+                    dist, task.C, 1, initial_bound
+                )
+                active_futures[future] = task
+
+        time.sleep(0.05)  # Loop throttling
+
     return results
 
-
-def save_simulation_results(filename, scenario_info, method_name, results: List[Task]):
+def save_day_results(filename, tasks: List[Task], method_name):
     file_exists = os.path.isfile(filename)
     with open(filename, mode="a", newline="") as f:
         writer = csv.writer(f)
         if not file_exists:
-            writer.writerow(["scenario", "method", "task_id", "n", "arrival_ts", "start_ts", "finish_ts", "wait_time",
-                             "service_time", "turnaround_time"])
-
-        for t in results:
             writer.writerow([
-                scenario_info,
-                method_name,
-                t.id,
-                t.n,
-                f"{t.arrival_time:.4f}",
-                f"{t.start_time:.4f}",
-                f"{t.finish_time:.4f}",
-                f"{t.wait_time:.4f}",
-                f"{t.service_time:.4f}",
-                f"{t.turnaround_time:.4f}"
+                "method", "task_id", "n",
+                "sim_arrival", "sim_finish", "status",
+                "real_wait_s", "real_service_s"
+            ])
+
+        for t in tasks:
+            sim_finish_hour = (t.real_finish_time / (
+                        t.real_finish_time / t.real_finish_time)) if t.real_finish_time == 0 else 0  # safety
+            # Odtwarzamy sim_finish na podstawie real
+            # sim_duration = real_duration / ratio
+            sim_finish = t.sim_arrival_hour + (t.turnaround_time / (
+                t.turnaround_time / (t.real_finish_time - t.real_arrival_time) if t.turnaround_time > 0 else 1))
+            # Prościej:
+            # start_hour to np 8.
+            # real_time 60s = 1h
+            sim_finish_h = 8 + (
+                        t.real_finish_time / 60.0)  # Tu trzeba wziąć ratio z argumentów, ale do CSV zapiszmy surowe dane
+
+            status_str = "OK" if t.completed_on_time else "LATE"
+
+            writer.writerow([
+                method_name, t.id, t.n,
+                f"{format_sim_time(t.sim_arrival_hour)}",
+                status_str,
+                f"{t.completed_on_time}",
+                f"{t.real_start_time - t.real_arrival_time:.2f}",  # Wait
+                f"{t.service_time:.2f}"  # Service
             ])
 
 
-def print_summary(results: List[Task]):
-    avg_wait = np.mean([t.wait_time for t in results])
-    avg_service = np.mean([t.service_time for t in results])
-    avg_turnaround = np.mean([t.turnaround_time for t in results])
-    makespan = max([t.finish_time for t in results])
-
-    print("-" * 40)
-    print(f"Makespan: {makespan:.4f} s")
-    print(f"Avg Wait: {avg_wait:.4f} s")
-    print(f"Avg Turnaround: {avg_turnaround:.4f} s")
-    print("-" * 40)
-
-
-
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="HPC Scheduler Simulation for CVRP")
+    parser = argparse.ArgumentParser(description="Symulacja dnia pracy logistyki (CVRP)")
 
+    parser.add_argument("--tasks_per_hour", type=int, default=5, help="Ile zadań wpada średnio w ciągu godziny")
+    parser.add_argument("--method", type=str, default="A", choices=["A", "B"], help="Strategia")
+    parser.add_argument("--sim_hour_duration", type=float, default=60.0, help="Ile sekund rzeczywistych trwa 1 godzina symulacji")
+    parser.add_argument("--workday_start", type=int, default=8, help="Godzina rozpoczęcia (np. 8)")
+    parser.add_argument("--workday_end", type=int, default=18, help="Godzina zakończenia (np. 18)")
 
-    parser.add_argument("--pattern", type=str, default="steady", choices=["steady", "rapid", "burst"],
-                        help="Wzorzec napływu zadań w czasie")
+    parser.add_argument("--p_easy", type=float, default=0.6, help="Prawdopodobieństwo łatwych (11-12)")
+    parser.add_argument("--p_medium", type=float, default=0.3, help="Prawdopodobieństwo średnich (13-14)")
 
-
-    parser.add_argument("--dist", type=str, default="constant",
-                        choices=["constant", "uniform", "skewed_easy", "skewed_hard"],
-                        help="Rozkład trudności (N)")
-    parser.add_argument("--n_min", type=int, default=12, help="Minimalne N")
-    parser.add_argument("--n_max", type=int, default=14, help="Maksymalne N")
-
-
-    parser.add_argument("--malicious_at", type=int, default=-1,
-                        help="Indeks zadania, które ma być outlierem (np. 5). -1 oznacza brak.")
-
-    # Ogólne
-    parser.add_argument("--tasks", type=int, default=10, help="Liczba zadań")
-    parser.add_argument("--method", type=str, default="A", choices=["A", "B"],
-                        help="Metoda A (Latency) lub B (Throughput)")
-    parser.add_argument("--cpus", type=int, default=8, help="Workerzy dla metody B")
-    parser.add_argument("--out", type=str, default="simulation_results_v2.csv", help="Plik wynikowy")
+    parser.add_argument("--cpus", type=int, default=64, help="Liczba workerów dla metody B")
+    parser.add_argument("--out", type=str, default="day_results.csv")
 
     args = parser.parse_args()
 
-    ray.init(address="auto", ignore_reinit_error=True)
+    # ray.init(address="auto", ignore_reinit_error=True)
 
-    # 1. Tworzenie scenariusza z nowymi parametrami
-    tasks = WorkloadGenerator.create_scenario(
-        arrival_pattern=args.pattern,
-        dist_type=args.dist,
-        num_tasks=args.tasks,
-        n_min=args.n_min,
-        n_max=args.n_max,
-        seed_start=42,
-        malicious_idx=args.malicious_at
+    p_hard = 1.0 - args.p_easy - args.p_medium
+    if p_hard < 0:
+        print("Błąd: Suma prawdopodobieństw > 1.0")
+        exit(1)
+
+    probs = {"easy": args.p_easy, "medium": args.p_medium, "hard": p_hard}
+    print(f"Rozkład trudności: Easy={probs['easy']:.2f}, Medium={probs['medium']:.2f}, Hard={probs['hard']:.2f}")
+
+    tasks = DayWorkloadGenerator.generate_day_schedule(
+        tasks_per_hour=args.tasks_per_hour,
+        start_hour=args.workday_start,
+        end_hour=args.workday_end,
+        sim_hour_duration_sec=args.sim_hour_duration,
+        probs=probs,
+        seed=42
     )
 
-    # Nazwa scenariusza do CSV (łączona z parametrów)
-    scenario_tag = f"{args.pattern}_{args.dist}"
-    if args.malicious_at >= 0:
-        scenario_tag += "_malicious"
+    print(f"Wygenerowano {len(tasks)} zadań na dzień {args.workday_start}:00-{args.workday_end}:00.")
+    for task in tasks:
+        print(task)
 
-    # 2. Uruchomienie
-    if args.method == "A":
-        processed_tasks = run_approach_a_cluster_exclusive(tasks)
-        method_name = "A_Cluster_Latency"
-    else:
-        processed_tasks = run_approach_b_node_parallel(tasks, max_concurrent_tasks=args.cpus)
-        method_name = f"B_Node_Throughput_{args.cpus}CPU"
-
-    # 3. Zapis
-    save_simulation_results(args.out, scenario_tag, method_name, processed_tasks)
-    print_summary(processed_tasks)
+    # # 3. Uruchomienie symulacji
+    # completed_tasks = run_day_simulation(
+    #     tasks,
+    #     args.method,
+    #     args.sim_hour_duration,
+    #     args.workday_start,
+    #     args.workday_end,
+    #     cpus_for_b=args.cpus
+    # )
+    #
+    # # 4. Statystyki końcowe
+    # ok_count = sum(1 for t in completed_tasks if t.completed_on_time)
+    # late_count = len(completed_tasks) - ok_count
+    # print(f"Wynik dnia: {ok_count} zadań wykonanych w terminie, {late_count} spóźnionych.")
+    #
+    # # Zapis
+    # save_day_results(args.out, completed_tasks, f"{args.method}_DaySim")

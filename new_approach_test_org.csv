@@ -1,5 +1,0 @@
-n,C,method,best_cost,time_sec,preparing_time,computing_time,cluster_type
-17,5,Test 7: Hybryda (Pary + Sync),37170.0,14.310956001281738,0.14570116996765137,14.165255308151245,Cluster singlethread
-18,5,Test 7: Hybryda (Pary + Sync),39471.0,165.13531351089478,0.16470575332641602,164.97060871124268,Cluster singlethread
-17,5,Test 7: Hybryda (Pary + Sync),37170.0,8.546294927597046,0.14310216903686523,8.403193235397339,Cluster multithread
-18,5,Test 7: Hybryda (Pary + Sync),39471.0,71.92525696754456,0.14931273460388184,71.77594518661499,Cluster multithread
