@@ -83,7 +83,7 @@ class ClusterSimulation:
 def generator_steady_state(env, cluster: ClusterSimulation, count=50):
     """Stały, umiarkowany napływ średnich zadań."""
     for i in range(count):
-        size = random.randint(15, 30)  # Średnie instancje CVRP
+        size = random.randint(12, 16)  # Średnie instancje CVRP
         task = Task(id=i, size=size, arrival_time=env.now)
         env.process(cluster.process_task(task))
         # Odstęp między zadaniami (umiarkowane obciążenie)
@@ -96,7 +96,7 @@ def generator_burst_traffic(env, cluster: ClusterSimulation, count=50):
     yield env.timeout(1)
     # 2. BURST: Wszystkie zadania wpadają w bardzo krótkim czasie
     for i in range(count):
-        size = random.randint(10, 25)
+        size = random.randint(10, 17)
         task = Task(id=i, size=size, arrival_time=env.now)
         env.process(cluster.process_task(task))
         yield env.timeout(random.uniform(0.01, 0.05))  # Bardzo mały odstęp
@@ -110,7 +110,7 @@ def generator_straggler_effect(env, cluster: ClusterSimulation, count=20):
             size = 80  # Bardzo duża instancja (wysoka złożoność)
             print(f"   [!] ({env.now:.2f}s) STRAGGLER (Size {size}) enters the queue...")
         else:
-            size = random.randint(10, 15)  # Małe, szybkie zadania
+            size = random.randint(10, 13)  # Małe, szybkie zadania
 
         task = Task(id=i, size=size, arrival_time=env.now)
         env.process(cluster.process_task(task))
