@@ -1,0 +1,21 @@
+scenario,method,task_id,n,arrival_ts,start_ts,finish_ts,wait_time,service_time,turnaround_time
+steady,Approach A (Latency),0,14,0.0000,0.0001,3.5502,0.0001,3.5501,3.5502
+steady,Approach A (Latency),1,14,2.0000,3.5504,5.7694,1.5504,2.2191,3.7694
+steady,Approach A (Latency),2,14,4.0000,5.7696,7.8747,1.7696,2.1051,3.8747
+steady,Approach A (Latency),3,14,6.0000,7.8748,9.9109,1.8748,2.0361,3.9109
+steady,Approach A (Latency),4,14,8.0000,9.9110,13.7852,1.9110,3.8741,5.7852
+steady,Approach A (Latency),5,14,10.0000,13.7853,15.8942,3.7853,2.1088,5.8942
+steady,Approach A (Latency),6,14,12.0000,15.8943,20.5697,3.8943,4.6754,8.5697
+steady,Approach A (Latency),7,14,14.0000,20.5698,22.6444,6.5698,2.0746,8.6444
+steady,Approach A (Latency),8,14,16.0000,22.6445,25.1100,6.6445,2.4655,9.1100
+steady,Approach A (Latency),9,14,18.0000,25.1102,27.2870,7.1102,2.1768,9.2870
+steady,Approach B (Throughput),2,14,4.0000,4.0399,7.5615,0.0399,3.5217,3.5615
+steady,Approach B (Throughput),1,14,2.0000,2.0248,8.6711,0.0248,6.6463,6.6711
+steady,Approach B (Throughput),3,14,6.0000,6.0513,9.5746,0.0513,3.5233,3.5746
+steady,Approach B (Throughput),0,14,0.0000,0.0001,10.0767,0.0001,10.0766,10.0767
+steady,Approach B (Throughput),5,14,10.0000,10.0769,15.9011,0.0769,5.8242,5.9011
+steady,Approach B (Throughput),7,14,14.0000,14.0930,18.2135,0.0930,4.1205,4.2135
+steady,Approach B (Throughput),9,14,18.0000,18.2140,23.7360,0.2140,5.5219,5.7360
+steady,Approach B (Throughput),8,14,16.0000,16.0020,32.0607,0.0020,16.0586,16.0607
+steady,Approach B (Throughput),4,14,8.0000,8.0640,49.8108,0.0640,41.7468,41.8108
+steady,Approach B (Throughput),6,14,12.0000,12.0841,76.1833,0.0841,64.0992,64.1833
