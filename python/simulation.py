@@ -150,7 +150,7 @@ def run_simulation(args):
                 if not active_tasks and task_queue:
                     current_task = heapq.heappop(task_queue)
 
-                    print(f"   -> [{current_sim_time_str}] START Zadania {current_task.id} (Mode A - Cluster)")
+                    print(f"   -> [{current_sim_time_str}] START Zadania {current_task.id} {current_task.difficulty} (Mode A - Cluster)")
                     current_task.start_time = elapsed_sim
                     current_task.start_real = time.time()
                     current_task.status = "RUNNING"
@@ -180,7 +180,7 @@ def run_simulation(args):
                     current_task = heapq.heappop(task_queue)
 
                     print(
-                        f"   -> [{current_sim_time_str}] START Zadania {current_task.id} (Mode B - Slot {active_count + 1}/{total_cpus})")
+                        f"   -> [{current_sim_time_str}] START Zadania {current_task.id} {current_task.difficulty}(Mode B - Slot {active_count + 1}/{total_cpus})")
                     current_task.start_time = elapsed_sim
                     current_task.start_real = time.time()
                     current_task.status = "RUNNING"
