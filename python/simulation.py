@@ -41,13 +41,15 @@ class Task:
         self.status = "PENDING"
         self.best_cost = float('inf')
 
-    def __lt__(self, other):
-        prio_map = {"hard": 0, "medium": 1, "easy": 2}
-        my_prio = prio_map[self.difficulty]
-        other_prio = prio_map[other.difficulty]
-
-        if my_prio != other_prio:
-            return my_prio < other_prio
+    # def __lt__(self, other):
+    #     prio_map = {"hard": 0, "medium": 1, "easy": 2}
+    #     my_prio = prio_map[self.difficulty]
+    #     other_prio = prio_map[other.difficulty]
+    #
+    #     if my_prio != other_prio:
+    #         return my_prio < other_prio
+    #     return self.arrival_time_offset < other.arrival_time_offset
+    def __lt__(self, other):# priorytet po przybyciu
         return self.arrival_time_offset < other.arrival_time_offset
 
 
