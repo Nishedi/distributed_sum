@@ -55,5 +55,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CVRP Day Simulator")
     parser.add_argument("--seed", type=int, default=1, help="Seed dla uruchomienia")
     for i in range(3, 9):
-        print(i)
-    #run_experiments(parser.parse_args().seed)
+        run_experiments(i)
