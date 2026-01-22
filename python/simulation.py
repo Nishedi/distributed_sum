@@ -64,13 +64,14 @@ def generate_schedule(n_tasks_per_hour, total_hours):
     task_counter = 0
 
     # 60% Easy (11-12), 30% Medium (13-14), 10% Hard (15-16)
-    probs = [0.6, 0.3, 0.1]
-    types = ["easy", "medium", "hard"]
+    probs = [0.5, 0.3, 0.15, 0.05]
+    types = ["easy", "medium", "hard", "very hard"]
 
     ranges = {
         "easy": (11, 13),
         "medium": (13, 15),
-        "hard": (15, 17)
+        "hard": (15, 16),
+        "very hard": (16,17)
     }
 
     seconds_per_hour = 3600
@@ -232,7 +233,7 @@ def run_simulation(args):
                             format_sim_time(task.arrival_time_offset),
                             format_sim_time(task.start_time),
                             format_sim_time(task.end_time),
-                            "COMPLETED", best, f"{real_duration:.4f}", f"{(task.start_time - task.arrival_time_offset):.2f}, f""{(task.end_time - task.arrival_time_offset):.2f}"
+                            "COMPLETED", best, f"{real_duration:.4f}", f"{(task.start_time - task.arrival_time_offset):.2f}", f"{(task.end_time - task.arrival_time_offset):.2f}"
                         ])
 
                     tasks_to_remove.append(t_id)
