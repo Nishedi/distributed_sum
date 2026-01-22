@@ -95,7 +95,7 @@ def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
         num_very_hard = np.random.randint(1, 3)
 
         indices_to_replace = np.random.choice(len(tasks), num_very_hard, replace=False)
-
+        print(indices_to_replace)
         for idx in indices_to_replace:
             original_task = tasks[idx]
 
