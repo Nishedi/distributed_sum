@@ -95,7 +95,6 @@ def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
         num_very_hard = np.random.randint(0, 3)
 
         indices_to_replace = np.random.choice(len(tasks), num_very_hard, replace=False)
-        print(indices_to_replace)
         for idx in indices_to_replace:
             original_task = tasks[idx]
 
@@ -106,11 +105,6 @@ def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
             tasks[idx] = Task(original_task.id, original_task.arrival_time_offset, vh_type, vh_n, C=5)
 
     tasks.sort(key=lambda x: x.arrival_time_offset)
-    print("-----------------------------")
-    for task in tasks:
-        if task.difficulty == "very hard":
-            print(task.difficulty)
-    print("-----------------------------")
     return tasks
 
 
