@@ -126,7 +126,7 @@ def run_simulation(args):
     with open(csv_file, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["task_id", "difficulty", "n", "arrival_sim", "start_sim", "end_sim", "status", "cost",
-                         "real_duration_sec", "waiting_time_sec", "time_in_system_sec"])
+                         "real_duration_sec", "waiting_time_mili_sec", "time_in_system_mili_sec"])
 
     try:
         while True:
@@ -224,7 +224,7 @@ def run_simulation(args):
 
                     print(
                         f" [OK] [{current_sim_time_str}] KONIEC Zadania {task.id}.{task.difficulty}. Koszt: {best:.2f}. Czas (sim): {(task.end_time - task.start_time) / 60:.1f} min. "
-                        f"Czas w systemie: {(task.end_time-task.arrival_time_offset)/60:.1f}, Czas pojawienia sie: {(task.arrival_time_offset)/60:.1f}")
+                        f"Czas w systemie: {(task.end_time-task.arrival_time_offset)/60:.1f}, Czas pojawienia sie: {format_sim_time(task.arrival_time_offset)}")
 
                     with open(csv_file, "a", newline="") as f:
                         writer = csv.writer(f)
@@ -233,7 +233,7 @@ def run_simulation(args):
                             format_sim_time(task.arrival_time_offset),
                             format_sim_time(task.start_time),
                             format_sim_time(task.end_time),
-                            "COMPLETED", best, f"{real_duration:.4f}", f"{(task.start_time - task.arrival_time_offset):.2f}", f"{(task.end_time - task.arrival_time_offset):.2f}"
+                            "COMPLETED", best, f"{real_duration*1000:.1f}", f"{(task.start_time - task.arrival_time_offset):.2f}", f"{(task.end_time - task.arrival_time_offset):.2f}"
                         ])
 
                     tasks_to_remove.append(t_id)
