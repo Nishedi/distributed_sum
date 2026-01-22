@@ -140,7 +140,7 @@ def run_simulation(args):
 
     total_cpus = int(ray.cluster_resources().get("CPU", 1))
 
-    csv_file = f"sim_results_{mode}_{tasks_per_hour}tph.csv"
+    csv_file = f"results/sim_results_{mode}_{tasks_per_hour}_Seed{args.seed}tph.csv"
     with open(csv_file, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["task_id", "difficulty", "n", "arrival_sim", "start_sim", "end_sim", "status", "cost",
