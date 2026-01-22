@@ -65,7 +65,7 @@ def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
     task_counter = 0
 
     # 60% Easy (11-12), 30% Medium (13-14), 10% Hard (15-16)
-    probs = [0.5, 0.32, 0, 0.18]
+    probs = [0.5, 0.32, 0.175, 0.005]
     types = ["easy", "medium", "hard", "very hard"]
 
     ranges = {
