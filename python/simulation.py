@@ -59,12 +59,13 @@ def format_sim_time(seconds_from_start):
     return current_time.strftime("%H:%M:%S")
 
 
-def generate_schedule(n_tasks_per_hour, total_hours):
+def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
+    np.random.seed(seed)
     tasks = []
     task_counter = 0
 
     # 60% Easy (11-12), 30% Medium (13-14), 10% Hard (15-16)
-    probs = [0.5, 0.32, 0.17, 0.01]
+    probs = [0.5, 0.32, 0.175, 0.005]
     types = ["easy", "medium", "hard", "very hard"]
 
     ranges = {
@@ -110,7 +111,7 @@ def run_simulation(args):
     print(f"Zadań na godzinę: {tasks_per_hour}")
     print(f"Skalowanie czasu: 1 min realna = {args.speed} h symulacyjna")
 
-    all_tasks = generate_schedule(tasks_per_hour, TOTAL_SIM_HOURS)
+    all_tasks = generate_schedule(tasks_per_hour, TOTAL_SIM_HOURS, args.seed)
     print(f"Wygenerowano łącznie {len(all_tasks)} zadań na cały dzień.")
 
     task_queue = []
@@ -283,6 +284,7 @@ if __name__ == "__main__":
                         help="Ile godzin symulacyjnych przypada na 1 minutę rzeczywistą (default 1.0)")
     parser.add_argument("--sync_iters", type=int, default=1000)
     parser.add_argument("--sync_time", type=int, default=2000)
+    parser.add_argument("--seed", type=int, default=42, help="Seed dla generatora losowego")
 
     args = parser.parse_args()
 
