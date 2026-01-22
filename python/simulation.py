@@ -93,6 +93,7 @@ def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
             task_counter += 1
 
     tasks.sort(key=lambda x: x.arrival_time_offset)
+    print(tasks)
     return tasks
 
 
