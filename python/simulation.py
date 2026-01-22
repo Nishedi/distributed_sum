@@ -115,6 +115,7 @@ def run_simulation(args):
     mode = args.mode
     simulation_speed_scale = 60.0 / args.speed
 
+
     time_factor = (3600.0) / (args.speed * 60.0)
 
     print(f"--- START SYMULACJI ---")
