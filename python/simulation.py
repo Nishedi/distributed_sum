@@ -16,6 +16,7 @@ from ray_cvrp import (
 
 SIM_START_HOUR = 8
 SIM_END_HOUR = 18
+TASK_CUTOFF_HOUR = 17
 TOTAL_SIM_HOURS = SIM_END_HOUR - SIM_START_HOUR
 REAL_MIN_TO_SIM_HOUR = 1.0
 
@@ -91,18 +92,18 @@ def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
             task = Task(task_counter, total_offset, t_type, n, C=5)
             tasks.append(task)
             task_counter += 1
-    if tasks:
-        num_very_hard = np.random.randint(0, 3)
-
-        indices_to_replace = np.random.choice(len(tasks), num_very_hard, replace=False)
-        for idx in indices_to_replace:
-            original_task = tasks[idx]
-
-            vh_type = "very hard"
-            vh_min, vh_max = ranges[vh_type]
-            vh_n = np.random.randint(vh_min, vh_max)
-
-            tasks[idx] = Task(original_task.id, original_task.arrival_time_offset, vh_type, vh_n, C=5)
+    # if tasks:
+    #     num_very_hard = np.random.randint(0, 3)
+    #
+    #     indices_to_replace = np.random.choice(len(tasks), num_very_hard, replace=False)
+    #     for idx in indices_to_replace:
+    #         original_task = tasks[idx]
+    #
+    #         vh_type = "very hard"
+    #         vh_min, vh_max = ranges[vh_type]
+    #         vh_n = np.random.randint(vh_min, vh_max)
+    #
+    #         tasks[idx] = Task(original_task.id, original_task.arrival_time_offset, vh_type, vh_n, C=5)
 
     tasks.sort(key=lambda x: x.arrival_time_offset)
     return tasks
@@ -121,10 +122,13 @@ def run_simulation(args):
     print(f"--- START SYMULACJI ---")
     print(f"Tryb: {mode}")
     print(f"Godziny pracy: {SIM_START_HOUR}:00 - {SIM_END_HOUR}:00")
+    print(f"Napływ zadań do: {TASK_CUTOFF_HOUR}:00 (ostatnia godzina na dokończenie)")  # Dodatkowy print informacyjny
+
+    generation_duration = TASK_CUTOFF_HOUR - SIM_START_HOUR
     print(f"Zadań na godzinę: {tasks_per_hour}")
     print(f"Skalowanie czasu: 1 min realna = {args.speed} h symulacyjna")
 
-    all_tasks = generate_schedule(tasks_per_hour, TOTAL_SIM_HOURS, args.seed)
+    all_tasks = generate_schedule(tasks_per_hour, generation_duration, args.seed)
     print(f"Wygenerowano łącznie {len(all_tasks)} zadań na cały dzień.")
 
     task_queue = []
