@@ -65,7 +65,7 @@ def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
     task_counter = 0
 
     # 60% Easy (11-12), 30% Medium (13-14), 10% Hard (15-16)
-    probs = [0.5, 0.32, 0.175, 0.005]
+    probs = [0.5, 0.32, 0, 0.18]
     types = ["easy", "medium", "hard", "very hard"]
 
     ranges = {
@@ -93,9 +93,11 @@ def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
             task_counter += 1
 
     tasks.sort(key=lambda x: x.arrival_time_offset)
+    print("-----------------------------")
     for task in tasks:
         if task.difficulty == "very hard":
             print(task.difficulty)
+    print("-----------------------------")
     return tasks
 
 
