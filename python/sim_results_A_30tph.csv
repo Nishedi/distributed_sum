@@ -1,301 +1,301 @@
 task_id,difficulty,n,arrival_sim,start_sim,end_sim,status,cost,real_duration_sec,waiting_time_sec,time_in_system_sec
-16,easy,11,08:03:51,08:03:54,08:05:10,COMPLETED,31532.0,1.2826,"3.45, f{(task.end_time - task.arrival_time_offset):.2f}"
-8,easy,12,08:06:14,08:06:17,08:07:28,COMPLETED,26598.0,1.1841,"3.51, f{(task.end_time - task.arrival_time_offset):.2f}"
-24,medium,13,08:07:37,08:07:40,08:09:16,COMPLETED,26154.814878774414,1.6041,"3.59, f{(task.end_time - task.arrival_time_offset):.2f}"
-29,easy,11,08:08:01,08:09:22,08:09:45,COMPLETED,34373.31551471123,0.3778,"81.86, f{(task.end_time - task.arrival_time_offset):.2f}"
-22,medium,14,08:12:11,08:12:15,08:15:00,COMPLETED,33719.0,2.7511,"4.78, f{(task.end_time - task.arrival_time_offset):.2f}"
-13,easy,12,08:12:20,08:15:06,08:15:59,COMPLETED,29366.0,0.8751,"166.88, f{(task.end_time - task.arrival_time_offset):.2f}"
-20,easy,11,08:16:33,08:16:35,08:16:57,COMPLETED,23076.45527020224,0.3651,"2.45, f{(task.end_time - task.arrival_time_offset):.2f}"
-19,hard,16,08:16:36,08:17:03,08:27:39,COMPLETED,34592.641532948815,10.6019,"27.38, f{(task.end_time - task.arrival_time_offset):.2f}"
-17,easy,12,08:16:56,08:27:45,08:29:01,COMPLETED,28010.0,1.2767,"649.53, f{(task.end_time - task.arrival_time_offset):.2f}"
-11,easy,11,08:21:06,08:29:08,08:29:29,COMPLETED,28535.551963635095,0.3584,"482.15, f{(task.end_time - task.arrival_time_offset):.2f}"
-27,easy,12,08:26:01,08:29:35,08:30:04,COMPLETED,25008.0,0.4759,"214.68, f{(task.end_time - task.arrival_time_offset):.2f}"
-1,easy,12,08:29:49,08:30:10,08:30:57,COMPLETED,24228.0,0.7950,"21.26, f{(task.end_time - task.arrival_time_offset):.2f}"
-26,easy,12,08:34:50,08:34:52,08:36:09,COMPLETED,24752.318601550047,1.2898,"2.30, f{(task.end_time - task.arrival_time_offset):.2f}"
-23,medium,14,08:37:52,08:37:57,08:40:41,COMPLETED,30430.0,2.7346,"5.88, f{(task.end_time - task.arrival_time_offset):.2f}"
-7,easy,12,08:38:59,08:40:47,08:41:52,COMPLETED,33612.0,1.0810,"108.99, f{(task.end_time - task.arrival_time_offset):.2f}"
-12,medium,13,08:41:42,08:41:58,08:43:34,COMPLETED,28558.0,1.5997,"16.87, f{(task.end_time - task.arrival_time_offset):.2f}"
-2,hard,16,08:42:45,08:43:40,09:08:26,COMPLETED,36461.0,24.7826,"55.87, f{(task.end_time - task.arrival_time_offset):.2f}"
-10,hard,15,08:54:20,09:08:33,09:12:41,COMPLETED,31673.0,4.1298,"853.87, f{(task.end_time - task.arrival_time_offset):.2f}"
-9,hard,15,08:56:18,09:12:47,09:16:25,COMPLETED,34312.0,3.6393,"989.67, f{(task.end_time - task.arrival_time_offset):.2f}"
-36,hard,16,09:15:04,09:16:32,11:01:34,COMPLETED,49360.0,105.0397,"88.05, f{(task.end_time - task.arrival_time_offset):.2f}"
-34,hard,15,09:16:47,11:01:40,11:05:47,COMPLETED,34407.0,4.1381,"6293.46, f{(task.end_time - task.arrival_time_offset):.2f}"
-37,hard,15,09:18:27,11:05:54,11:09:33,COMPLETED,30821.918078963412,3.6581,"6447.79, f{(task.end_time - task.arrival_time_offset):.2f}"
-51,hard,15,09:20:11,11:09:40,11:15:12,COMPLETED,36649.0,5.5478,"6569.29, f{(task.end_time - task.arrival_time_offset):.2f}"
-55,hard,16,09:37:13,11:15:19,11:33:26,COMPLETED,39655.0,18.1362,"5886.19, f{(task.end_time - task.arrival_time_offset):.2f}"
-41,hard,16,09:46:04,11:33:33,11:41:54,COMPLETED,31272.26332971298,8.3616,"6449.38, f{(task.end_time - task.arrival_time_offset):.2f}"
-56,hard,16,09:52:51,11:42:01,12:04:56,COMPLETED,35587.0,22.9365,"6550.10, f{(task.end_time - task.arrival_time_offset):.2f}"
-88,hard,16,10:08:28,12:05:03,12:16:50,COMPLETED,33802.0,11.7904,"6995.32, f{(task.end_time - task.arrival_time_offset):.2f}"
-78,hard,16,10:30:36,12:16:56,12:36:05,COMPLETED,34326.0,19.1572,"6380.78, f{(task.end_time - task.arrival_time_offset):.2f}"
-84,hard,16,10:37:39,12:36:12,12:47:58,COMPLETED,36189.0,11.7817,"7113.24, f{(task.end_time - task.arrival_time_offset):.2f}"
-91,hard,15,11:01:34,12:48:05,12:50:41,COMPLETED,26934.0,2.6197,"6391.17, f{(task.end_time - task.arrival_time_offset):.2f}"
-131,hard,16,12:00:22,12:50:48,12:54:04,COMPLETED,30789.0,3.2758,"3026.37, f{(task.end_time - task.arrival_time_offset):.2f}"
-125,hard,15,12:15:07,12:54:10,13:04:02,COMPLETED,36972.0,9.8817,"2343.95, f{(task.end_time - task.arrival_time_offset):.2f}"
-124,hard,16,12:16:37,13:04:09,13:14:01,COMPLETED,41749.0,9.8655,"2852.89, f{(task.end_time - task.arrival_time_offset):.2f}"
-146,hard,15,12:25:59,13:14:07,13:19:21,COMPLETED,33867.0,5.2332,"2888.85, f{(task.end_time - task.arrival_time_offset):.2f}"
-136,hard,16,12:42:13,13:19:27,13:29:28,COMPLETED,34964.0,10.0231,"2234.86, f{(task.end_time - task.arrival_time_offset):.2f}"
-149,hard,15,12:50:10,13:29:35,13:33:39,COMPLETED,29642.0,4.0728,"2365.29, f{(task.end_time - task.arrival_time_offset):.2f}"
-167,hard,16,13:12:50,13:33:45,13:43:49,COMPLETED,32703.0,10.0902,"1255.70, f{(task.end_time - task.arrival_time_offset):.2f}"
-155,hard,16,13:25:00,13:43:57,13:59:53,COMPLETED,31053.50970538953,15.9444,"1137.15, f{(task.end_time - task.arrival_time_offset):.2f}"
-179,hard,15,13:29:50,13:59:59,14:09:57,COMPLETED,37791.0,9.9624,"1809.85, f{(task.end_time - task.arrival_time_offset):.2f}"
-153,hard,16,13:43:38,14:10:03,14:13:05,COMPLETED,30533.0,3.0455,"1585.61, f{(task.end_time - task.arrival_time_offset):.2f}"
-3,medium,14,08:44:03,14:13:12,14:16:07,COMPLETED,32827.0,2.9349,"19749.38, f{(task.end_time - task.arrival_time_offset):.2f}"
-45,medium,14,09:03:59,14:16:14,14:18:47,COMPLETED,34730.0,2.5528,"18735.52, f{(task.end_time - task.arrival_time_offset):.2f}"
-59,medium,14,09:12:26,14:18:53,14:21:29,COMPLETED,34997.0,2.6079,"18387.72, f{(task.end_time - task.arrival_time_offset):.2f}"
-54,medium,14,09:16:41,14:21:36,14:29:19,COMPLETED,46901.13939122696,7.7273,"18295.22, f{(task.end_time - task.arrival_time_offset):.2f}"
-57,medium,13,09:17:18,14:29:25,14:31:06,COMPLETED,29446.0,1.6892,"18727.88, f{(task.end_time - task.arrival_time_offset):.2f}"
-53,medium,13,09:43:03,14:31:13,14:33:12,COMPLETED,33860.0,1.9893,"17290.25, f{(task.end_time - task.arrival_time_offset):.2f}"
-209,hard,15,14:32:59,14:33:18,14:39:38,COMPLETED,30520.0,6.3480,"19.63, f{(task.end_time - task.arrival_time_offset):.2f}"
-50,medium,14,09:45:11,14:39:45,14:42:10,COMPLETED,35599.0,2.4171,"17674.54, f{(task.end_time - task.arrival_time_offset):.2f}"
-35,medium,13,09:56:45,14:42:16,14:43:41,COMPLETED,27067.0,1.4245,"17131.59, f{(task.end_time - task.arrival_time_offset):.2f}"
-82,medium,14,10:16:27,14:43:48,14:46:00,COMPLETED,32796.0,2.2125,"16041.09, f{(task.end_time - task.arrival_time_offset):.2f}"
-67,medium,14,10:26:16,14:46:06,14:48:25,COMPLETED,34566.0,2.3140,"15590.86, f{(task.end_time - task.arrival_time_offset):.2f}"
-181,hard,15,14:47:37,14:48:31,14:53:03,COMPLETED,41307.0,4.5446,"54.73, f{(task.end_time - task.arrival_time_offset):.2f}"
-61,medium,14,10:26:56,14:53:10,14:56:05,COMPLETED,27835.0,2.9275,"15974.45, f{(task.end_time - task.arrival_time_offset):.2f}"
-197,hard,15,14:55:12,14:56:12,14:58:55,COMPLETED,27395.0,2.7247,"60.14, f{(task.end_time - task.arrival_time_offset):.2f}"
-60,medium,14,10:28:03,14:59:01,15:02:02,COMPLETED,33058.57210611817,3.0271,"16258.65, f{(task.end_time - task.arrival_time_offset):.2f}"
-74,medium,13,10:40:59,15:02:09,15:03:40,COMPLETED,26513.3043699628,1.5375,"15670.31, f{(task.end_time - task.arrival_time_offset):.2f}"
-218,hard,16,15:02:13,15:03:47,15:16:49,COMPLETED,35685.0,13.0345,"94.60, f{(task.end_time - task.arrival_time_offset):.2f}"
-211,hard,16,15:08:03,15:16:55,15:22:35,COMPLETED,28672.0,5.6632,"532.70, f{(task.end_time - task.arrival_time_offset):.2f}"
-86,medium,14,10:45:19,15:22:41,15:25:11,COMPLETED,32185.0,2.5097,"16642.52, f{(task.end_time - task.arrival_time_offset):.2f}"
-80,medium,13,10:56:08,15:25:18,15:27:35,COMPLETED,36176.0,2.2927,"16150.13, f{(task.end_time - task.arrival_time_offset):.2f}"
-64,medium,14,10:57:46,15:27:41,15:30:31,COMPLETED,40399.0,2.8304,"16195.72, f{(task.end_time - task.arrival_time_offset):.2f}"
-237,hard,16,15:29:35,15:30:37,15:35:41,COMPLETED,31963.0,5.0687,"62.57, f{(task.end_time - task.arrival_time_offset):.2f}"
-105,medium,13,11:02:36,15:35:47,15:37:42,COMPLETED,23439.0,1.9172,"16391.72, f{(task.end_time - task.arrival_time_offset):.2f}"
-214,hard,15,15:36:40,15:37:48,15:42:44,COMPLETED,30805.0,4.9411,"68.78, f{(task.end_time - task.arrival_time_offset):.2f}"
-114,medium,13,11:08:55,15:42:51,15:45:27,COMPLETED,35843.0,2.6110,"16436.28, f{(task.end_time - task.arrival_time_offset):.2f}"
-111,medium,13,11:11:46,15:45:33,15:46:39,COMPLETED,28154.91346990001,1.1014,"16427.97, f{(task.end_time - task.arrival_time_offset):.2f}"
-102,medium,14,11:12:55,15:46:46,15:49:35,COMPLETED,29861.0,2.8217,"16431.08, f{(task.end_time - task.arrival_time_offset):.2f}"
-99,medium,14,11:15:31,15:49:41,15:52:36,COMPLETED,35365.0,2.9197,"16450.41, f{(task.end_time - task.arrival_time_offset):.2f}"
-110,medium,14,11:17:27,15:52:42,15:55:19,COMPLETED,31552.0,2.6186,"16515.62, f{(task.end_time - task.arrival_time_offset):.2f}"
-118,medium,14,11:21:19,15:55:25,15:57:32,COMPLETED,34044.0,2.1229,"16446.76, f{(task.end_time - task.arrival_time_offset):.2f}"
-108,medium,13,11:33:03,15:57:39,15:58:52,COMPLETED,30775.03150240268,1.2244,"15876.17, f{(task.end_time - task.arrival_time_offset):.2f}"
-115,medium,13,11:37:56,15:58:58,16:01:04,COMPLETED,30500.0,2.0936,"15662.67, f{(task.end_time - task.arrival_time_offset):.2f}"
-217,hard,15,15:59:47,16:01:10,16:06:30,COMPLETED,34560.0,5.3357,"83.31, f{(task.end_time - task.arrival_time_offset):.2f}"
-258,hard,16,16:02:27,16:06:36,17:22:12,COMPLETED,49115.0,75.5998,"249.47, f{(task.end_time - task.arrival_time_offset):.2f}"
-246,hard,15,16:10:30,17:22:18,17:27:19,COMPLETED,31685.0,5.0308,"4308.49, f{(task.end_time - task.arrival_time_offset):.2f}"
-241,hard,16,16:16:15,17:27:26,17:41:58,COMPLETED,42259.0,14.5501,"4271.36, f{(task.end_time - task.arrival_time_offset):.2f}"
-240,hard,16,16:30:57,17:42:05,17:53:33,COMPLETED,30791.556044929028,11.4906,"4268.40, f{(task.end_time - task.arrival_time_offset):.2f}"
-254,hard,16,16:36:48,17:53:40,18:00:00,UNFINISHED,-1,-1,-1
-270,hard,15,17:00:21,-,-,IGNORED,-1,-1
-294,hard,15,17:07:28,-,-,IGNORED,-1,-1
-288,hard,16,17:15:58,-,-,IGNORED,-1,-1
-274,hard,16,17:40:45,-,-,IGNORED,-1,-1
-93,medium,13,11:44:46,-,-,IGNORED,-1,-1
-96,medium,14,11:57:31,-,-,IGNORED,-1,-1
-122,medium,14,12:11:48,-,-,IGNORED,-1,-1
-142,medium,14,12:28:50,-,-,IGNORED,-1,-1
-137,medium,13,12:48:14,-,-,IGNORED,-1,-1
-127,medium,13,12:54:45,-,-,IGNORED,-1,-1
-135,medium,14,12:56:04,-,-,IGNORED,-1,-1
-178,medium,14,13:13:13,-,-,IGNORED,-1,-1
-172,medium,14,13:17:17,-,-,IGNORED,-1,-1
-156,medium,13,13:23:23,-,-,IGNORED,-1,-1
-174,medium,13,13:41:56,-,-,IGNORED,-1,-1
-169,medium,13,13:53:03,-,-,IGNORED,-1,-1
-154,medium,13,13:57:15,-,-,IGNORED,-1,-1
-198,medium,13,14:03:32,-,-,IGNORED,-1,-1
-188,medium,14,14:19:30,-,-,IGNORED,-1,-1
-195,medium,13,14:32:24,-,-,IGNORED,-1,-1
-184,medium,13,14:35:21,-,-,IGNORED,-1,-1
-199,medium,13,14:42:01,-,-,IGNORED,-1,-1
-204,medium,13,14:44:11,-,-,IGNORED,-1,-1
-229,medium,13,15:07:20,-,-,IGNORED,-1,-1
-212,medium,13,15:14:08,-,-,IGNORED,-1,-1
-236,medium,14,15:17:27,-,-,IGNORED,-1,-1
-235,medium,14,15:21:04,-,-,IGNORED,-1,-1
-238,medium,14,15:35:41,-,-,IGNORED,-1,-1
-220,medium,13,15:39:43,-,-,IGNORED,-1,-1
-219,medium,14,15:46:35,-,-,IGNORED,-1,-1
-228,medium,13,15:47:15,-,-,IGNORED,-1,-1
-215,medium,13,15:48:11,-,-,IGNORED,-1,-1
-234,medium,13,15:49:31,-,-,IGNORED,-1,-1
-224,medium,13,15:50:35,-,-,IGNORED,-1,-1
-256,medium,13,16:00:59,-,-,IGNORED,-1,-1
-262,medium,13,16:04:36,-,-,IGNORED,-1,-1
-266,medium,13,16:09:34,-,-,IGNORED,-1,-1
-250,medium,14,16:12:03,-,-,IGNORED,-1,-1
-255,medium,14,16:21:54,-,-,IGNORED,-1,-1
-263,medium,13,16:23:38,-,-,IGNORED,-1,-1
-248,medium,14,16:29:14,-,-,IGNORED,-1,-1
-269,medium,13,16:29:49,-,-,IGNORED,-1,-1
-265,medium,13,16:33:33,-,-,IGNORED,-1,-1
-264,medium,13,16:55:07,-,-,IGNORED,-1,-1
-292,medium,14,17:06:49,-,-,IGNORED,-1,-1
-277,medium,14,17:08:34,-,-,IGNORED,-1,-1
-276,medium,14,17:08:52,-,-,IGNORED,-1,-1
-285,medium,14,17:10:09,-,-,IGNORED,-1,-1
-271,medium,14,17:10:47,-,-,IGNORED,-1,-1
-289,medium,14,17:11:23,-,-,IGNORED,-1,-1
-287,medium,14,17:18:09,-,-,IGNORED,-1,-1
-291,medium,13,17:24:35,-,-,IGNORED,-1,-1
-290,medium,13,17:35:09,-,-,IGNORED,-1,-1
-278,medium,14,17:42:18,-,-,IGNORED,-1,-1
-272,medium,13,17:47:38,-,-,IGNORED,-1,-1
-280,medium,14,17:49:15,-,-,IGNORED,-1,-1
-4,easy,12,08:39:09,-,-,IGNORED,-1,-1
-0,easy,12,08:45:20,-,-,IGNORED,-1,-1
-6,easy,12,08:46:40,-,-,IGNORED,-1,-1
-14,easy,12,08:48:56,-,-,IGNORED,-1,-1
-21,easy,11,08:55:57,-,-,IGNORED,-1,-1
-15,easy,12,08:57:01,-,-,IGNORED,-1,-1
-18,easy,11,08:57:35,-,-,IGNORED,-1,-1
-25,easy,11,08:58:33,-,-,IGNORED,-1,-1
-5,easy,12,08:59:36,-,-,IGNORED,-1,-1
-28,easy,11,08:59:39,-,-,IGNORED,-1,-1
-33,easy,12,09:11:27,-,-,IGNORED,-1,-1
-31,easy,11,09:12:31,-,-,IGNORED,-1,-1
-42,easy,11,09:14:28,-,-,IGNORED,-1,-1
-30,easy,11,09:24:13,-,-,IGNORED,-1,-1
-58,easy,12,09:25:26,-,-,IGNORED,-1,-1
-49,easy,12,09:37:29,-,-,IGNORED,-1,-1
-48,easy,11,09:39:11,-,-,IGNORED,-1,-1
-32,easy,11,09:39:24,-,-,IGNORED,-1,-1
-47,easy,11,09:45:23,-,-,IGNORED,-1,-1
-43,easy,12,09:46:19,-,-,IGNORED,-1,-1
-52,easy,12,09:49:04,-,-,IGNORED,-1,-1
-40,easy,12,09:49:32,-,-,IGNORED,-1,-1
-44,easy,11,09:50:23,-,-,IGNORED,-1,-1
-46,easy,12,09:51:38,-,-,IGNORED,-1,-1
-39,easy,11,09:55:37,-,-,IGNORED,-1,-1
-38,easy,11,09:57:56,-,-,IGNORED,-1,-1
-71,easy,12,10:04:23,-,-,IGNORED,-1,-1
-65,easy,11,10:14:14,-,-,IGNORED,-1,-1
-89,easy,11,10:15:16,-,-,IGNORED,-1,-1
-76,easy,11,10:15:40,-,-,IGNORED,-1,-1
-69,easy,12,10:20:49,-,-,IGNORED,-1,-1
-68,easy,12,10:22:05,-,-,IGNORED,-1,-1
-79,easy,11,10:25:59,-,-,IGNORED,-1,-1
-63,easy,11,10:27:21,-,-,IGNORED,-1,-1
-73,easy,12,10:29:47,-,-,IGNORED,-1,-1
-72,easy,11,10:30:58,-,-,IGNORED,-1,-1
-85,easy,12,10:33:08,-,-,IGNORED,-1,-1
-62,easy,12,10:36:18,-,-,IGNORED,-1,-1
-66,easy,12,10:39:05,-,-,IGNORED,-1,-1
-75,easy,12,10:42:13,-,-,IGNORED,-1,-1
-81,easy,11,10:44:03,-,-,IGNORED,-1,-1
-70,easy,12,10:45:28,-,-,IGNORED,-1,-1
-87,easy,12,10:51:06,-,-,IGNORED,-1,-1
-83,easy,12,10:53:34,-,-,IGNORED,-1,-1
-77,easy,11,10:56:06,-,-,IGNORED,-1,-1
-104,easy,12,11:00:30,-,-,IGNORED,-1,-1
-109,easy,12,11:01:29,-,-,IGNORED,-1,-1
-106,easy,12,11:01:37,-,-,IGNORED,-1,-1
-100,easy,11,11:04:34,-,-,IGNORED,-1,-1
-101,easy,12,11:08:36,-,-,IGNORED,-1,-1
-95,easy,11,11:12:10,-,-,IGNORED,-1,-1
-90,easy,12,11:12:10,-,-,IGNORED,-1,-1
-116,easy,12,11:16:03,-,-,IGNORED,-1,-1
-107,easy,12,11:18:06,-,-,IGNORED,-1,-1
-97,easy,12,11:18:17,-,-,IGNORED,-1,-1
-103,easy,11,11:22:36,-,-,IGNORED,-1,-1
-119,easy,11,11:26:11,-,-,IGNORED,-1,-1
-113,easy,11,11:28:02,-,-,IGNORED,-1,-1
-94,easy,11,11:36:02,-,-,IGNORED,-1,-1
-112,easy,11,11:40:45,-,-,IGNORED,-1,-1
-117,easy,11,11:42:08,-,-,IGNORED,-1,-1
-92,easy,11,11:46:47,-,-,IGNORED,-1,-1
-98,easy,12,11:56:36,-,-,IGNORED,-1,-1
-138,easy,11,12:00:07,-,-,IGNORED,-1,-1
-140,easy,11,12:00:46,-,-,IGNORED,-1,-1
-141,easy,12,12:02:09,-,-,IGNORED,-1,-1
-132,easy,12,12:02:36,-,-,IGNORED,-1,-1
-128,easy,12,12:05:49,-,-,IGNORED,-1,-1
-126,easy,11,12:11:04,-,-,IGNORED,-1,-1
-143,easy,11,12:15:55,-,-,IGNORED,-1,-1
-148,easy,11,12:17:33,-,-,IGNORED,-1,-1
-121,easy,11,12:24:03,-,-,IGNORED,-1,-1
-134,easy,11,12:24:04,-,-,IGNORED,-1,-1
-139,easy,11,12:27:06,-,-,IGNORED,-1,-1
-120,easy,11,12:30:07,-,-,IGNORED,-1,-1
-129,easy,11,12:36:19,-,-,IGNORED,-1,-1
-123,easy,12,12:43:11,-,-,IGNORED,-1,-1
-147,easy,11,12:50:14,-,-,IGNORED,-1,-1
-130,easy,12,12:51:33,-,-,IGNORED,-1,-1
-133,easy,12,12:52:50,-,-,IGNORED,-1,-1
-145,easy,11,12:56:57,-,-,IGNORED,-1,-1
-144,easy,11,12:58:21,-,-,IGNORED,-1,-1
-161,easy,11,13:00:03,-,-,IGNORED,-1,-1
-171,easy,12,13:02:28,-,-,IGNORED,-1,-1
-165,easy,12,13:03:03,-,-,IGNORED,-1,-1
-159,easy,12,13:09:07,-,-,IGNORED,-1,-1
-173,easy,12,13:09:23,-,-,IGNORED,-1,-1
-157,easy,12,13:13:44,-,-,IGNORED,-1,-1
-168,easy,11,13:16:20,-,-,IGNORED,-1,-1
-166,easy,12,13:16:39,-,-,IGNORED,-1,-1
-170,easy,12,13:21:15,-,-,IGNORED,-1,-1
-176,easy,11,13:23:34,-,-,IGNORED,-1,-1
-158,easy,12,13:34:46,-,-,IGNORED,-1,-1
-150,easy,12,13:36:42,-,-,IGNORED,-1,-1
-175,easy,11,13:37:20,-,-,IGNORED,-1,-1
-152,easy,12,13:45:31,-,-,IGNORED,-1,-1
-164,easy,12,13:49:39,-,-,IGNORED,-1,-1
-162,easy,12,13:49:52,-,-,IGNORED,-1,-1
-151,easy,11,13:52:47,-,-,IGNORED,-1,-1
-160,easy,12,13:53:07,-,-,IGNORED,-1,-1
-163,easy,11,13:56:34,-,-,IGNORED,-1,-1
-177,easy,12,13:56:48,-,-,IGNORED,-1,-1
-192,easy,11,14:00:09,-,-,IGNORED,-1,-1
-200,easy,11,14:03:23,-,-,IGNORED,-1,-1
-191,easy,11,14:06:57,-,-,IGNORED,-1,-1
-186,easy,12,14:07:19,-,-,IGNORED,-1,-1
-201,easy,12,14:07:37,-,-,IGNORED,-1,-1
-194,easy,11,14:19:55,-,-,IGNORED,-1,-1
-183,easy,11,14:22:56,-,-,IGNORED,-1,-1
-189,easy,11,14:23:31,-,-,IGNORED,-1,-1
-205,easy,11,14:24:28,-,-,IGNORED,-1,-1
-206,easy,12,14:26:43,-,-,IGNORED,-1,-1
-196,easy,12,14:28:38,-,-,IGNORED,-1,-1
-203,easy,11,14:29:10,-,-,IGNORED,-1,-1
-187,easy,12,14:30:05,-,-,IGNORED,-1,-1
-185,easy,12,14:33:24,-,-,IGNORED,-1,-1
-207,easy,11,14:36:11,-,-,IGNORED,-1,-1
-193,easy,11,14:37:44,-,-,IGNORED,-1,-1
-208,easy,11,14:44:04,-,-,IGNORED,-1,-1
-190,easy,12,14:44:20,-,-,IGNORED,-1,-1
-182,easy,12,14:44:42,-,-,IGNORED,-1,-1
-202,easy,12,14:46:22,-,-,IGNORED,-1,-1
-180,easy,11,14:56:54,-,-,IGNORED,-1,-1
-216,easy,12,15:01:43,-,-,IGNORED,-1,-1
-231,easy,11,15:18:05,-,-,IGNORED,-1,-1
-232,easy,11,15:21:17,-,-,IGNORED,-1,-1
-230,easy,12,15:24:22,-,-,IGNORED,-1,-1
-226,easy,12,15:24:58,-,-,IGNORED,-1,-1
-222,easy,11,15:25:35,-,-,IGNORED,-1,-1
-213,easy,12,15:27:39,-,-,IGNORED,-1,-1
-227,easy,11,15:28:43,-,-,IGNORED,-1,-1
-239,easy,12,15:28:55,-,-,IGNORED,-1,-1
-225,easy,11,15:37:02,-,-,IGNORED,-1,-1
-223,easy,12,15:39:56,-,-,IGNORED,-1,-1
-233,easy,11,15:43:10,-,-,IGNORED,-1,-1
-210,easy,12,15:45:10,-,-,IGNORED,-1,-1
-221,easy,12,15:55:55,-,-,IGNORED,-1,-1
-260,easy,11,16:05:23,-,-,IGNORED,-1,-1
-257,easy,12,16:06:54,-,-,IGNORED,-1,-1
-267,easy,12,16:12:50,-,-,IGNORED,-1,-1
-243,easy,12,16:18:55,-,-,IGNORED,-1,-1
-244,easy,12,16:21:21,-,-,IGNORED,-1,-1
-251,easy,11,16:33:09,-,-,IGNORED,-1,-1
-259,easy,12,16:36:40,-,-,IGNORED,-1,-1
-261,easy,12,16:37:35,-,-,IGNORED,-1,-1
-252,easy,11,16:41:03,-,-,IGNORED,-1,-1
-268,easy,11,16:45:20,-,-,IGNORED,-1,-1
-245,easy,11,16:49:31,-,-,IGNORED,-1,-1
-253,easy,12,16:50:54,-,-,IGNORED,-1,-1
-242,easy,11,16:52:36,-,-,IGNORED,-1,-1
-249,easy,11,16:56:31,-,-,IGNORED,-1,-1
-247,easy,12,16:58:33,-,-,IGNORED,-1,-1
-299,easy,11,17:00:13,-,-,IGNORED,-1,-1
-298,easy,12,17:01:12,-,-,IGNORED,-1,-1
-297,easy,11,17:03:31,-,-,IGNORED,-1,-1
-281,easy,11,17:03:53,-,-,IGNORED,-1,-1
-284,easy,12,17:04:12,-,-,IGNORED,-1,-1
-286,easy,11,17:16:58,-,-,IGNORED,-1,-1
-282,easy,12,17:31:03,-,-,IGNORED,-1,-1
-283,easy,12,17:31:47,-,-,IGNORED,-1,-1
-273,easy,12,17:33:40,-,-,IGNORED,-1,-1
-296,easy,11,17:40:40,-,-,IGNORED,-1,-1
-279,easy,12,17:43:09,-,-,IGNORED,-1,-1
-295,easy,11,17:48:24,-,-,IGNORED,-1,-1
-293,easy,12,17:54:17,-,-,IGNORED,-1,-1
-275,easy,11,17:57:25,-,-,IGNORED,-1,-1
+22,easy,12,08:04:45,08:04:48,08:06:49,COMPLETED,32402.0,2.0375,"3.50, f{(task.end_time - task.arrival_time_offset):.2f}"
+23,easy,12,08:05:19,08:06:56,08:08:01,COMPLETED,26520.69902374652,1.0802,"97.79, f{(task.end_time - task.arrival_time_offset):.2f}"
+20,easy,12,08:07:28,08:08:07,08:08:35,COMPLETED,33317.0,0.4758,"39.62, f{(task.end_time - task.arrival_time_offset):.2f}"
+3,easy,12,08:09:23,08:09:24,08:10:05,COMPLETED,35154.15700688126,0.6830,"1.32, f{(task.end_time - task.arrival_time_offset):.2f}"
+11,medium,13,08:10:10,08:10:11,08:11:07,COMPLETED,25601.0,0.9359,"1.33, f{(task.end_time - task.arrival_time_offset):.2f}"
+27,easy,11,08:13:08,08:13:13,08:14:10,COMPLETED,32939.85215271067,0.9589,"5.67, f{(task.end_time - task.arrival_time_offset):.2f}"
+1,easy,12,08:13:17,08:14:17,08:14:57,COMPLETED,32335.545376961636,0.6783,"60.23, f{(task.end_time - task.arrival_time_offset):.2f}"
+15,easy,12,08:14:05,08:15:03,08:15:44,COMPLETED,29773.586235351228,0.6834,"58.95, f{(task.end_time - task.arrival_time_offset):.2f}"
+0,hard,15,08:19:32,08:19:33,08:22:24,COMPLETED,30029.0,2.8528,"1.36, f{(task.end_time - task.arrival_time_offset):.2f}"
+7,medium,13,08:23:35,08:23:36,08:25:47,COMPLETED,31392.0,2.1897,"1.65, f{(task.end_time - task.arrival_time_offset):.2f}"
+6,easy,12,08:26:53,08:26:54,08:27:58,COMPLETED,26027.184570642014,1.0827,"1.13, f{(task.end_time - task.arrival_time_offset):.2f}"
+25,easy,11,08:28:22,08:28:23,08:28:39,COMPLETED,32457.13420010782,0.2768,"1.14, f{(task.end_time - task.arrival_time_offset):.2f}"
+12,easy,12,08:28:25,08:28:45,08:29:32,COMPLETED,30751.0,0.7898,"20.78, f{(task.end_time - task.arrival_time_offset):.2f}"
+17,medium,13,08:29:37,08:29:39,08:31:44,COMPLETED,31641.0,2.0967,"2.21, f{(task.end_time - task.arrival_time_offset):.2f}"
+2,easy,12,08:30:17,08:31:51,08:32:31,COMPLETED,23986.533829081312,0.6795,"94.04, f{(task.end_time - task.arrival_time_offset):.2f}"
+13,easy,11,08:33:02,08:33:07,08:33:30,COMPLETED,19399.76789137241,0.3719,"5.93, f{(task.end_time - task.arrival_time_offset):.2f}"
+29,medium,13,08:33:50,08:33:54,08:34:42,COMPLETED,26948.0,0.8014,"4.33, f{(task.end_time - task.arrival_time_offset):.2f}"
+5,easy,12,08:34:08,08:34:48,08:35:40,COMPLETED,28716.220121157625,0.8750,"40.45, f{(task.end_time - task.arrival_time_offset):.2f}"
+18,hard,15,08:36:36,08:36:41,08:59:12,COMPLETED,39781.0,22.5230,"5.16, f{(task.end_time - task.arrival_time_offset):.2f}"
+21,easy,11,08:37:00,08:59:18,09:00:17,COMPLETED,24243.97790001271,0.9770,"1338.56, f{(task.end_time - task.arrival_time_offset):.2f}"
+16,hard,15,08:37:24,09:00:23,09:12:38,COMPLETED,31385.267632905674,12.2692,"1379.21, f{(task.end_time - task.arrival_time_offset):.2f}"
+19,easy,12,08:40:25,09:12:45,09:14:01,COMPLETED,17716.0,1.2786,"1940.39, f{(task.end_time - task.arrival_time_offset):.2f}"
+4,easy,11,08:41:19,09:14:08,09:14:30,COMPLETED,23831.008660422944,0.3778,"1969.13, f{(task.end_time - task.arrival_time_offset):.2f}"
+9,easy,12,08:42:31,09:14:36,09:15:11,COMPLETED,23864.0,0.5870,"1925.83, f{(task.end_time - task.arrival_time_offset):.2f}"
+28,easy,11,08:43:25,09:15:18,09:15:34,COMPLETED,27442.595657141617,0.2764,"1913.07, f{(task.end_time - task.arrival_time_offset):.2f}"
+24,medium,14,08:47:59,09:15:40,09:17:47,COMPLETED,30494.0,2.1239,"1661.69, f{(task.end_time - task.arrival_time_offset):.2f}"
+8,easy,11,08:48:38,09:17:54,09:18:41,COMPLETED,18388.36798802423,0.7948,"1756.17, f{(task.end_time - task.arrival_time_offset):.2f}"
+26,easy,12,08:54:10,09:18:47,09:19:21,COMPLETED,27217.23766723579,0.5732,"1477.89, f{(task.end_time - task.arrival_time_offset):.2f}"
+14,easy,11,08:55:19,09:19:28,09:19:44,COMPLETED,23375.26041636149,0.2796,"1449.36, f{(task.end_time - task.arrival_time_offset):.2f}"
+10,easy,11,08:58:53,09:19:51,09:20:12,COMPLETED,27150.021115037773,0.3629,"1258.17, f{(task.end_time - task.arrival_time_offset):.2f}"
+37,easy,11,09:07:36,09:20:19,09:20:46,COMPLETED,29235.82306850116,0.4709,"763.05, f{(task.end_time - task.arrival_time_offset):.2f}"
+47,medium,14,09:08:33,09:20:53,09:22:59,COMPLETED,25700.0,2.1107,"740.34, f{(task.end_time - task.arrival_time_offset):.2f}"
+40,easy,12,09:09:12,09:23:06,09:24:04,COMPLETED,28444.0,0.9834,"834.02, f{(task.end_time - task.arrival_time_offset):.2f}"
+39,easy,11,09:12:34,09:24:11,09:24:26,COMPLETED,21020.720855463518,0.2583,"697.05, f{(task.end_time - task.arrival_time_offset):.2f}"
+38,easy,12,09:13:07,09:24:32,09:25:25,COMPLETED,29638.0,0.8847,"685.57, f{(task.end_time - task.arrival_time_offset):.2f}"
+59,easy,12,09:13:11,09:25:31,09:26:00,COMPLETED,19253.353824475926,0.4889,"740.68, f{(task.end_time - task.arrival_time_offset):.2f}"
+56,easy,11,09:14:11,09:26:07,09:26:34,COMPLETED,21934.34424457881,0.4604,"716.04, f{(task.end_time - task.arrival_time_offset):.2f}"
+53,easy,11,09:17:50,09:26:40,09:26:56,COMPLETED,31460.582001637456,0.2697,"530.68, f{(task.end_time - task.arrival_time_offset):.2f}"
+35,hard,15,09:22:14,09:27:02,09:30:18,COMPLETED,32171.0,3.2694,"288.89, f{(task.end_time - task.arrival_time_offset):.2f}"
+44,medium,14,09:22:19,09:30:25,09:32:31,COMPLETED,33129.0,2.1107,"486.08, f{(task.end_time - task.arrival_time_offset):.2f}"
+46,medium,14,09:23:15,09:32:37,09:34:21,COMPLETED,33136.0,1.7300,"562.75, f{(task.end_time - task.arrival_time_offset):.2f}"
+41,medium,13,09:23:36,09:34:27,09:35:20,COMPLETED,34440.0,0.8911,"651.58, f{(task.end_time - task.arrival_time_offset):.2f}"
+55,hard,16,09:27:58,09:35:27,09:56:59,COMPLETED,28398.961876843547,21.5579,"449.07, f{(task.end_time - task.arrival_time_offset):.2f}"
+48,easy,12,09:35:38,09:57:06,09:58:04,COMPLETED,27002.0,0.9759,"1288.57, f{(task.end_time - task.arrival_time_offset):.2f}"
+43,easy,12,09:38:00,09:58:11,09:58:51,COMPLETED,26208.0,0.6773,"1211.15, f{(task.end_time - task.arrival_time_offset):.2f}"
+45,easy,12,09:38:12,09:58:57,09:59:25,COMPLETED,22122.0,0.4698,"1245.81, f{(task.end_time - task.arrival_time_offset):.2f}"
+30,easy,12,09:39:12,09:59:32,10:00:18,COMPLETED,28432.0,0.7765,"1220.02, f{(task.end_time - task.arrival_time_offset):.2f}"
+51,easy,12,09:39:38,10:00:24,10:01:22,COMPLETED,25383.0,0.9736,"1246.64, f{(task.end_time - task.arrival_time_offset):.2f}"
+32,hard,15,09:39:42,10:01:29,10:09:26,COMPLETED,40203.14944651989,7.9595,"1307.08, f{(task.end_time - task.arrival_time_offset):.2f}"
+52,easy,12,09:40:50,10:09:32,10:10:36,COMPLETED,27836.0,1.0707,"1722.68, f{(task.end_time - task.arrival_time_offset):.2f}"
+36,easy,11,09:41:06,10:10:42,10:11:05,COMPLETED,20117.476478892633,0.3741,"1776.95, f{(task.end_time - task.arrival_time_offset):.2f}"
+49,easy,11,09:41:45,10:11:11,10:11:44,COMPLETED,30727.69155999947,0.5631,"1766.42, f{(task.end_time - task.arrival_time_offset):.2f}"
+42,medium,14,09:44:49,10:11:51,10:15:35,COMPLETED,35478.0,3.7412,"1622.23, f{(task.end_time - task.arrival_time_offset):.2f}"
+50,hard,16,09:46:28,10:15:41,10:54:06,COMPLETED,26810.0,38.4180,"1753.78, f{(task.end_time - task.arrival_time_offset):.2f}"
+31,medium,14,09:48:10,10:54:12,10:56:49,COMPLETED,33597.0,2.6081,"3962.89, f{(task.end_time - task.arrival_time_offset):.2f}"
+33,easy,11,09:48:41,10:56:55,10:57:40,COMPLETED,28832.755959835573,0.7619,"4094.40, f{(task.end_time - task.arrival_time_offset):.2f}"
+34,hard,15,09:52:37,10:57:47,11:02:08,COMPLETED,32689.0,4.3649,"3910.13, f{(task.end_time - task.arrival_time_offset):.2f}"
+54,easy,12,09:53:04,11:02:15,11:03:34,COMPLETED,31467.0,1.3217,"4151.07, f{(task.end_time - task.arrival_time_offset):.2f}"
+57,easy,12,09:53:21,11:03:40,11:04:14,COMPLETED,25761.652038376367,0.5742,"4219.40, f{(task.end_time - task.arrival_time_offset):.2f}"
+58,easy,12,09:57:57,11:04:20,11:04:52,COMPLETED,25732.439302093335,0.5247,"3983.87, f{(task.end_time - task.arrival_time_offset):.2f}"
+72,medium,13,10:00:23,11:04:58,11:06:39,COMPLETED,29100.125788050846,1.6951,"3875.38, f{(task.end_time - task.arrival_time_offset):.2f}"
+70,easy,12,10:00:39,11:06:46,11:07:08,COMPLETED,26483.80825139481,0.3800,"3967.11, f{(task.end_time - task.arrival_time_offset):.2f}"
+80,medium,13,10:00:54,11:07:14,11:08:13,COMPLETED,29940.0,0.9840,"3980.94, f{(task.end_time - task.arrival_time_offset):.2f}"
+78,medium,14,10:01:23,11:08:20,11:10:33,COMPLETED,35707.0,2.2360,"4017.01, f{(task.end_time - task.arrival_time_offset):.2f}"
+73,medium,14,10:01:27,11:10:40,11:13:28,COMPLETED,37979.917379665094,2.8082,"4153.19, f{(task.end_time - task.arrival_time_offset):.2f}"
+71,easy,12,10:03:08,11:13:34,11:14:44,COMPLETED,36335.0,1.1749,"4226.71, f{(task.end_time - task.arrival_time_offset):.2f}"
+61,easy,11,10:08:57,11:14:51,11:15:12,COMPLETED,32982.29530976384,0.3620,"3954.22, f{(task.end_time - task.arrival_time_offset):.2f}"
+84,medium,14,10:11:21,11:15:18,11:17:54,COMPLETED,33563.0,2.6070,"3837.96, f{(task.end_time - task.arrival_time_offset):.2f}"
+66,easy,12,10:18:35,11:18:01,11:19:06,COMPLETED,25128.063013614836,1.0922,"3566.40, f{(task.end_time - task.arrival_time_offset):.2f}"
+79,easy,12,10:21:08,11:19:12,11:20:11,COMPLETED,25027.0,0.9763,"3484.96, f{(task.end_time - task.arrival_time_offset):.2f}"
+86,easy,12,10:21:10,11:20:17,11:20:58,COMPLETED,36843.0,0.6882,"3547.56, f{(task.end_time - task.arrival_time_offset):.2f}"
+63,easy,12,10:23:40,11:21:04,11:22:39,COMPLETED,22311.0,1.5742,"3444.88, f{(task.end_time - task.arrival_time_offset):.2f}"
+88,medium,14,10:23:51,11:22:45,11:24:57,COMPLETED,26270.0,2.2102,"3534.36, f{(task.end_time - task.arrival_time_offset):.2f}"
+74,easy,11,10:25:22,11:25:03,11:26:01,COMPLETED,27247.51027700298,0.9654,"3581.99, f{(task.end_time - task.arrival_time_offset):.2f}"
+67,easy,11,10:25:53,11:26:07,11:26:23,COMPLETED,30690.19233556755,0.2637,"3614.94, f{(task.end_time - task.arrival_time_offset):.2f}"
+65,easy,12,10:29:20,11:26:29,11:26:57,COMPLETED,30978.345762928115,0.4728,"3429.79, f{(task.end_time - task.arrival_time_offset):.2f}"
+75,easy,12,10:32:47,11:27:04,11:27:56,COMPLETED,24072.0,0.8752,"3257.18, f{(task.end_time - task.arrival_time_offset):.2f}"
+62,easy,12,10:33:27,11:28:02,11:28:55,COMPLETED,22761.481245089053,0.8837,"3275.73, f{(task.end_time - task.arrival_time_offset):.2f}"
+85,medium,14,10:35:26,11:29:01,11:31:08,COMPLETED,32346.0,2.1138,"3215.77, f{(task.end_time - task.arrival_time_offset):.2f}"
+89,easy,11,10:41:02,11:31:14,11:31:54,COMPLETED,30667.71978053674,0.6603,"3012.63, f{(task.end_time - task.arrival_time_offset):.2f}"
+76,easy,12,10:44:10,11:32:00,11:32:40,COMPLETED,25624.0,0.6756,"2870.27, f{(task.end_time - task.arrival_time_offset):.2f}"
+87,medium,14,10:45:57,11:32:46,11:35:06,COMPLETED,33641.0,2.3276,"2809.88, f{(task.end_time - task.arrival_time_offset):.2f}"
+64,medium,14,10:49:31,11:35:12,11:37:18,COMPLETED,32149.0,2.1057,"2741.56, f{(task.end_time - task.arrival_time_offset):.2f}"
+81,easy,12,10:50:11,11:37:24,11:38:35,COMPLETED,31028.0,1.1807,"2833.93, f{(task.end_time - task.arrival_time_offset):.2f}"
+60,easy,12,10:51:43,11:38:41,11:39:11,COMPLETED,26989.0,0.5031,"2818.81, f{(task.end_time - task.arrival_time_offset):.2f}"
+77,hard,16,10:52:16,11:39:18,11:57:13,COMPLETED,33927.0,17.9310,"2822.03, f{(task.end_time - task.arrival_time_offset):.2f}"
+83,easy,12,10:53:17,11:57:19,11:58:30,COMPLETED,32562.4336130987,1.1805,"3842.91, f{(task.end_time - task.arrival_time_offset):.2f}"
+69,easy,11,10:53:47,11:58:36,11:59:05,COMPLETED,31399.515459823095,0.4739,"3889.77, f{(task.end_time - task.arrival_time_offset):.2f}"
+82,easy,12,10:56:03,11:59:11,11:59:39,COMPLETED,27821.0,0.4808,"3788.23, f{(task.end_time - task.arrival_time_offset):.2f}"
+68,medium,14,10:59:02,11:59:46,12:01:53,COMPLETED,26758.0,2.1278,"3644.11, f{(task.end_time - task.arrival_time_offset):.2f}"
+106,hard,16,11:01:51,12:01:59,12:16:15,COMPLETED,35959.0,14.2774,"3608.80, f{(task.end_time - task.arrival_time_offset):.2f}"
+91,easy,12,11:03:14,12:16:22,12:17:27,COMPLETED,26998.0,1.0932,"4388.48, f{(task.end_time - task.arrival_time_offset):.2f}"
+107,medium,14,11:08:29,12:17:34,12:19:40,COMPLETED,30363.0,2.1157,"4145.09, f{(task.end_time - task.arrival_time_offset):.2f}"
+113,hard,16,11:10:47,12:19:47,12:30:53,COMPLETED,34246.74858878481,11.1163,"4140.06, f{(task.end_time - task.arrival_time_offset):.2f}"
+98,medium,13,11:13:03,12:31:00,12:32:53,COMPLETED,28467.0,1.8948,"4677.07, f{(task.end_time - task.arrival_time_offset):.2f}"
+105,easy,11,11:17:36,12:32:59,12:33:15,COMPLETED,26373.316362307934,0.2676,"4523.78, f{(task.end_time - task.arrival_time_offset):.2f}"
+94,easy,11,11:18:30,12:33:21,12:33:37,COMPLETED,26312.83725862114,0.2624,"4491.86, f{(task.end_time - task.arrival_time_offset):.2f}"
+101,medium,13,11:20:09,12:33:43,12:35:00,COMPLETED,28721.0,1.2920,"4414.62, f{(task.end_time - task.arrival_time_offset):.2f}"
+114,easy,11,11:20:38,12:35:07,12:35:41,COMPLETED,21664.19817013434,0.5679,"4469.16, f{(task.end_time - task.arrival_time_offset):.2f}"
+111,easy,11,11:21:36,12:35:47,12:36:03,COMPLETED,32844.173563528326,0.2690,"4451.26, f{(task.end_time - task.arrival_time_offset):.2f}"
+104,hard,16,11:21:37,12:36:09,12:46:49,COMPLETED,33023.56992895064,10.6821,"4472.44, f{(task.end_time - task.arrival_time_offset):.2f}"
+102,easy,11,11:23:10,12:46:56,12:47:59,COMPLETED,33577.0,1.0604,"5026.39, f{(task.end_time - task.arrival_time_offset):.2f}"
+109,medium,14,11:23:56,12:48:06,12:49:56,COMPLETED,30704.803151337423,1.8387,"5050.04, f{(task.end_time - task.arrival_time_offset):.2f}"
+112,easy,11,11:27:30,12:50:02,12:50:18,COMPLETED,36123.42011627256,0.2767,"4952.39, f{(task.end_time - task.arrival_time_offset):.2f}"
+108,medium,13,11:29:40,12:50:25,12:52:30,COMPLETED,27691.0,2.0957,"4845.01, f{(task.end_time - task.arrival_time_offset):.2f}"
+117,easy,12,11:29:43,12:52:36,12:53:35,COMPLETED,29172.789387551835,0.9966,"4973.78, f{(task.end_time - task.arrival_time_offset):.2f}"
+90,easy,11,11:31:48,12:53:42,12:54:04,COMPLETED,21292.833979760766,0.3765,"4914.62, f{(task.end_time - task.arrival_time_offset):.2f}"
+97,hard,15,11:32:38,12:54:11,12:56:36,COMPLETED,34932.0,2.4303,"4893.24, f{(task.end_time - task.arrival_time_offset):.2f}"
+118,easy,11,11:32:43,12:56:43,12:57:35,COMPLETED,31012.910329102066,0.8747,"5040.08, f{(task.end_time - task.arrival_time_offset):.2f}"
+119,medium,13,11:33:18,12:57:41,12:59:28,COMPLETED,24415.511016062694,1.7957,"5063.58, f{(task.end_time - task.arrival_time_offset):.2f}"
+115,easy,11,11:38:30,12:59:35,13:00:21,COMPLETED,29080.0,0.7659,"4865.36, f{(task.end_time - task.arrival_time_offset):.2f}"
+103,medium,13,11:40:21,13:00:27,13:02:14,COMPLETED,27671.0,1.8002,"4806.33, f{(task.end_time - task.arrival_time_offset):.2f}"
+92,easy,11,11:41:40,13:02:21,13:02:39,COMPLETED,29148.586482413124,0.3009,"4841.39, f{(task.end_time - task.arrival_time_offset):.2f}"
+110,easy,12,11:43:30,13:02:45,13:03:20,COMPLETED,25588.30864664288,0.5889,"4755.48, f{(task.end_time - task.arrival_time_offset):.2f}"
+100,medium,13,11:46:03,13:03:26,13:04:33,COMPLETED,31382.286433994424,1.1130,"4643.85, f{(task.end_time - task.arrival_time_offset):.2f}"
+95,medium,14,11:46:15,13:04:39,13:06:47,COMPLETED,30021.0,2.1306,"4704.66, f{(task.end_time - task.arrival_time_offset):.2f}"
+96,easy,12,11:50:01,13:06:53,13:08:04,COMPLETED,32715.0,1.1864,"4612.52, f{(task.end_time - task.arrival_time_offset):.2f}"
+99,medium,14,11:53:01,13:08:10,13:10:46,COMPLETED,27701.0,2.6086,"4509.73, f{(task.end_time - task.arrival_time_offset):.2f}"
+93,medium,13,11:56:02,13:10:53,13:12:10,COMPLETED,33024.0,1.2943,"4491.27, f{(task.end_time - task.arrival_time_offset):.2f}"
+116,easy,12,11:57:14,13:12:16,13:12:52,COMPLETED,34711.19963465422,0.6093,"4502.95, f{(task.end_time - task.arrival_time_offset):.2f}"
+127,easy,11,12:00:37,13:12:59,13:13:15,COMPLETED,31230.087309869727,0.2688,"4342.55, f{(task.end_time - task.arrival_time_offset):.2f}"
+121,easy,11,12:01:36,13:13:21,13:13:38,COMPLETED,21618.320196445264,0.2807,"4305.71, f{(task.end_time - task.arrival_time_offset):.2f}"
+123,medium,13,12:02:38,13:13:44,13:15:50,COMPLETED,30058.0,2.0955,"4266.58, f{(task.end_time - task.arrival_time_offset):.2f}"
+122,easy,12,12:05:15,13:15:56,13:17:13,COMPLETED,32210.0,1.2878,"4241.34, f{(task.end_time - task.arrival_time_offset):.2f}"
+126,easy,12,12:06:14,13:17:19,13:18:01,COMPLETED,28541.858586051167,0.7031,"4265.63, f{(task.end_time - task.arrival_time_offset):.2f}"
+135,easy,12,12:06:25,13:18:07,13:18:41,COMPLETED,27696.0,0.5702,"4302.86, f{(task.end_time - task.arrival_time_offset):.2f}"
+134,easy,12,12:06:31,13:18:48,13:19:22,COMPLETED,25528.54978355846,0.5824,"4337.15, f{(task.end_time - task.arrival_time_offset):.2f}"
+128,medium,14,12:08:13,13:19:29,13:24:48,COMPLETED,38436.0,5.3241,"4276.12, f{(task.end_time - task.arrival_time_offset):.2f}"
+145,easy,11,12:08:59,13:24:54,13:25:48,COMPLETED,29074.095638518957,0.8962,"4555.59, f{(task.end_time - task.arrival_time_offset):.2f}"
+143,medium,13,12:11:59,13:25:54,13:26:47,COMPLETED,31029.111736383344,0.8878,"4435.39, f{(task.end_time - task.arrival_time_offset):.2f}"
+148,easy,11,12:14:35,13:26:53,13:27:15,COMPLETED,27871.841508612055,0.3738,"4338.69, f{(task.end_time - task.arrival_time_offset):.2f}"
+139,hard,16,12:17:19,13:27:22,13:36:07,COMPLETED,29483.761299779802,8.7656,"4203.16, f{(task.end_time - task.arrival_time_offset):.2f}"
+129,easy,11,12:20:09,13:36:14,13:37:11,COMPLETED,35077.985108949506,0.9699,"4565.12, f{(task.end_time - task.arrival_time_offset):.2f}"
+125,medium,13,12:20:40,13:37:18,13:38:00,COMPLETED,28038.0,0.7134,"4598.34, f{(task.end_time - task.arrival_time_offset):.2f}"
+137,medium,13,12:23:04,13:38:07,13:39:19,COMPLETED,30929.338356757155,1.2229,"4503.17, f{(task.end_time - task.arrival_time_offset):.2f}"
+140,easy,11,12:24:00,13:39:26,13:39:45,COMPLETED,25382.826984862433,0.3200,"4526.65, f{(task.end_time - task.arrival_time_offset):.2f}"
+147,easy,12,12:24:24,13:39:51,13:40:33,COMPLETED,35509.64033719048,0.6993,"4527.88, f{(task.end_time - task.arrival_time_offset):.2f}"
+146,easy,12,12:25:13,13:40:39,13:41:09,COMPLETED,30034.75005962118,0.5047,"4526.87, f{(task.end_time - task.arrival_time_offset):.2f}"
+138,medium,13,12:26:27,13:41:16,13:43:21,COMPLETED,25703.0,2.1035,"4489.19, f{(task.end_time - task.arrival_time_offset):.2f}"
+124,easy,12,12:30:34,13:43:28,13:44:20,COMPLETED,28084.0,0.8803,"4374.43, f{(task.end_time - task.arrival_time_offset):.2f}"
+130,easy,11,12:31:53,13:44:27,13:44:43,COMPLETED,32014.781443409658,0.2712,"4354.28, f{(task.end_time - task.arrival_time_offset):.2f}"
+136,hard,16,12:34:47,13:44:49,13:52:18,COMPLETED,35571.0,7.4885,"4202.58, f{(task.end_time - task.arrival_time_offset):.2f}"
+144,easy,11,12:37:01,13:52:24,13:53:35,COMPLETED,29294.0,1.1805,"4523.91, f{(task.end_time - task.arrival_time_offset):.2f}"
+149,easy,11,12:39:59,13:53:41,13:54:04,COMPLETED,23689.9915884172,0.3826,"4422.78, f{(task.end_time - task.arrival_time_offset):.2f}"
+120,easy,11,12:41:23,13:54:10,13:54:26,COMPLETED,28877.910395807095,0.2686,"4367.76, f{(task.end_time - task.arrival_time_offset):.2f}"
+132,hard,15,12:44:25,13:54:32,14:08:26,COMPLETED,36938.0,13.8913,"4207.96, f{(task.end_time - task.arrival_time_offset):.2f}"
+142,easy,11,12:45:02,14:08:32,14:09:29,COMPLETED,33439.97317646313,0.9605,"5010.46, f{(task.end_time - task.arrival_time_offset):.2f}"
+131,easy,12,12:47:28,14:09:36,14:10:04,COMPLETED,30627.747094560462,0.4765,"4928.12, f{(task.end_time - task.arrival_time_offset):.2f}"
+133,easy,11,12:51:02,14:10:10,14:10:26,COMPLETED,24659.0,0.2610,"4748.73, f{(task.end_time - task.arrival_time_offset):.2f}"
+141,medium,13,12:59:47,14:10:32,14:12:37,COMPLETED,33301.0,2.0905,"4245.47, f{(task.end_time - task.arrival_time_offset):.2f}"
+175,medium,13,13:00:43,14:12:43,14:14:12,COMPLETED,33355.0,1.4958,"4320.92, f{(task.end_time - task.arrival_time_offset):.2f}"
+150,easy,12,13:01:57,14:14:19,14:15:01,COMPLETED,28576.0,0.6961,"4342.71, f{(task.end_time - task.arrival_time_offset):.2f}"
+167,medium,14,13:02:19,14:15:07,14:17:26,COMPLETED,31986.0,2.3293,"4368.50, f{(task.end_time - task.arrival_time_offset):.2f}"
+165,easy,12,13:07:22,14:17:33,14:18:46,COMPLETED,29122.0,1.2243,"4211.38, f{(task.end_time - task.arrival_time_offset):.2f}"
+161,easy,12,13:07:29,14:18:52,14:19:26,COMPLETED,35028.78573885483,0.5718,"4283.86, f{(task.end_time - task.arrival_time_offset):.2f}"
+179,medium,14,13:09:13,14:19:33,14:22:09,COMPLETED,31732.0,2.6056,"4220.20, f{(task.end_time - task.arrival_time_offset):.2f}"
+156,hard,15,13:09:15,14:22:15,14:26:48,COMPLETED,38922.0,4.5766,"4380.56, f{(task.end_time - task.arrival_time_offset):.2f}"
+159,easy,12,13:10:08,14:26:56,14:28:24,COMPLETED,40155.0,1.4830,"4608.20, f{(task.end_time - task.arrival_time_offset):.2f}"
+163,medium,14,13:14:28,14:28:31,14:33:03,COMPLETED,37346.55381822303,4.5442,"4443.20, f{(task.end_time - task.arrival_time_offset):.2f}"
+172,hard,15,13:19:50,14:33:09,14:37:23,COMPLETED,34512.0,4.2299,"4399.88, f{(task.end_time - task.arrival_time_offset):.2f}"
+162,medium,13,13:19:53,14:37:29,14:40:00,COMPLETED,30162.0,2.5277,"4656.70, f{(task.end_time - task.arrival_time_offset):.2f}"
+160,medium,14,13:21:47,14:40:07,14:44:53,COMPLETED,36574.0,4.7703,"4700.40, f{(task.end_time - task.arrival_time_offset):.2f}"
+178,hard,16,13:22:25,14:44:59,14:55:09,COMPLETED,35542.575601690514,10.1800,"4954.66, f{(task.end_time - task.arrival_time_offset):.2f}"
+152,easy,11,13:25:18,14:55:16,14:56:08,COMPLETED,24506.164126837793,0.8689,"5398.48, f{(task.end_time - task.arrival_time_offset):.2f}"
+173,hard,16,13:29:54,14:56:14,15:00:40,COMPLETED,31339.0,4.4449,"5180.64, f{(task.end_time - task.arrival_time_offset):.2f}"
+164,easy,12,13:31:19,15:00:47,15:01:51,COMPLETED,30191.0,1.0766,"5368.41, f{(task.end_time - task.arrival_time_offset):.2f}"
+166,easy,11,13:32:45,15:01:58,15:02:13,COMPLETED,27710.626827497057,0.2649,"5353.03, f{(task.end_time - task.arrival_time_offset):.2f}"
+169,medium,14,13:33:13,15:02:19,15:05:14,COMPLETED,35659.0,2.9118,"5346.95, f{(task.end_time - task.arrival_time_offset):.2f}"
+153,medium,14,13:37:46,15:05:20,15:07:27,COMPLETED,33515.0,2.1164,"5254.68, f{(task.end_time - task.arrival_time_offset):.2f}"
+168,hard,16,13:39:33,15:07:33,15:20:51,COMPLETED,37480.0,13.3007,"5280.69, f{(task.end_time - task.arrival_time_offset):.2f}"
+177,easy,11,13:43:00,15:20:57,15:21:49,COMPLETED,23217.452696112992,0.8702,"5877.76, f{(task.end_time - task.arrival_time_offset):.2f}"
+170,easy,11,13:44:01,15:21:55,15:22:36,COMPLETED,33511.60992948654,0.6761,"5874.99, f{(task.end_time - task.arrival_time_offset):.2f}"
+176,easy,12,13:45:05,15:22:42,15:23:18,COMPLETED,24373.0,0.6011,"5857.58, f{(task.end_time - task.arrival_time_offset):.2f}"
+155,easy,12,13:52:01,15:23:24,15:23:59,COMPLETED,26060.05070585709,0.5903,"5483.68, f{(task.end_time - task.arrival_time_offset):.2f}"
+157,medium,13,13:53:50,15:24:06,15:24:55,COMPLETED,31650.0,0.8363,"5416.12, f{(task.end_time - task.arrival_time_offset):.2f}"
+171,hard,16,13:54:26,15:25:02,15:45:43,COMPLETED,42201.0,20.6935,"5436.34, f{(task.end_time - task.arrival_time_offset):.2f}"
+151,medium,13,13:55:20,15:45:49,15:47:37,COMPLETED,29080.0,1.8117,"6629.98, f{(task.end_time - task.arrival_time_offset):.2f}"
+154,hard,16,13:56:20,15:47:44,16:05:05,COMPLETED,35354.0,17.3516,"6684.73, f{(task.end_time - task.arrival_time_offset):.2f}"
+174,easy,12,13:58:06,16:05:11,16:06:22,COMPLETED,30877.25194114764,1.1846,"7625.86, f{(task.end_time - task.arrival_time_offset):.2f}"
+158,medium,13,13:59:01,16:06:28,16:07:15,COMPLETED,26512.16767893735,0.7869,"7647.96, f{(task.end_time - task.arrival_time_offset):.2f}"
+188,hard,15,14:01:46,16:07:22,16:19:26,COMPLETED,32760.0,12.0752,"7536.20, f{(task.end_time - task.arrival_time_offset):.2f}"
+206,easy,11,14:05:17,16:19:32,16:20:25,COMPLETED,28315.000962547496,0.8746,"8055.74, f{(task.end_time - task.arrival_time_offset):.2f}"
+199,easy,12,14:07:28,16:20:31,16:21:41,COMPLETED,30250.05864825349,1.1747,"7983.24, f{(task.end_time - task.arrival_time_offset):.2f}"
+187,easy,11,14:10:01,16:21:47,16:22:03,COMPLETED,23233.88147116407,0.2593,"7906.74, f{(task.end_time - task.arrival_time_offset):.2f}"
+203,medium,13,14:11:53,16:22:09,16:24:45,COMPLETED,35721.236713650425,2.6148,"7816.33, f{(task.end_time - task.arrival_time_offset):.2f}"
+205,medium,14,14:11:59,16:24:52,16:27:10,COMPLETED,25120.0,2.3091,"7973.24, f{(task.end_time - task.arrival_time_offset):.2f}"
+207,hard,15,14:18:01,16:27:16,16:43:46,COMPLETED,45007.0,16.5017,"7755.82, f{(task.end_time - task.arrival_time_offset):.2f}"
+182,medium,13,14:20:44,16:43:52,16:45:34,COMPLETED,30138.0,1.6929,"8588.95, f{(task.end_time - task.arrival_time_offset):.2f}"
+194,medium,13,14:24:06,16:45:40,16:46:52,COMPLETED,34960.0,1.2089,"8494.55, f{(task.end_time - task.arrival_time_offset):.2f}"
+196,easy,11,14:25:41,16:46:59,16:47:20,COMPLETED,25152.362548765184,0.3706,"8478.11, f{(task.end_time - task.arrival_time_offset):.2f}"
+195,medium,14,14:32:17,16:47:27,16:49:36,COMPLETED,31306.0,2.1609,"8110.38, f{(task.end_time - task.arrival_time_offset):.2f}"
+204,medium,14,14:32:44,16:49:43,16:53:03,COMPLETED,28651.0,3.3381,"8219.07, f{(task.end_time - task.arrival_time_offset):.2f}"
+186,medium,13,14:33:14,16:53:09,16:55:05,COMPLETED,33570.0,1.9350,"8395.38, f{(task.end_time - task.arrival_time_offset):.2f}"
+191,medium,13,14:38:46,16:55:11,16:57:11,COMPLETED,35587.0,2.0090,"8185.51, f{(task.end_time - task.arrival_time_offset):.2f}"
+198,medium,13,14:41:52,16:57:18,16:59:24,COMPLETED,31972.12929307827,2.1113,"8126.08, f{(task.end_time - task.arrival_time_offset):.2f}"
+201,hard,16,14:43:06,16:59:30,17:06:54,COMPLETED,34843.0,7.4037,"8184.79, f{(task.end_time - task.arrival_time_offset):.2f}"
+192,easy,11,14:44:17,17:07:01,17:07:58,COMPLETED,26270.78571742629,0.9631,"8564.04, f{(task.end_time - task.arrival_time_offset):.2f}"
+180,medium,13,14:46:17,17:08:04,17:08:58,COMPLETED,22834.0,0.8941,"8507.86, f{(task.end_time - task.arrival_time_offset):.2f}"
+197,medium,13,14:49:26,17:09:04,17:10:23,COMPLETED,27032.0,1.3152,"8378.53, f{(task.end_time - task.arrival_time_offset):.2f}"
+193,medium,14,14:52:53,17:10:29,17:12:44,COMPLETED,35733.0,2.2540,"8256.47, f{(task.end_time - task.arrival_time_offset):.2f}"
+189,medium,13,14:53:15,17:12:50,17:14:50,COMPLETED,27739.0,1.9989,"8375.73, f{(task.end_time - task.arrival_time_offset):.2f}"
+202,medium,14,14:54:46,17:14:56,17:17:05,COMPLETED,37969.0,2.1593,"8410.69, f{(task.end_time - task.arrival_time_offset):.2f}"
+181,easy,12,14:54:51,17:17:12,17:18:10,COMPLETED,34575.0,0.9757,"8541.29, f{(task.end_time - task.arrival_time_offset):.2f}"
+185,easy,11,14:55:25,17:18:16,17:18:26,COMPLETED,35550.1608981509,0.1710,"8571.85, f{(task.end_time - task.arrival_time_offset):.2f}"
+209,easy,11,14:56:19,17:18:33,17:18:55,COMPLETED,26196.69260935569,0.3707,"8534.14, f{(task.end_time - task.arrival_time_offset):.2f}"
+208,easy,12,14:56:30,17:19:01,17:19:35,COMPLETED,26635.897019919405,0.5777,"8551.40, f{(task.end_time - task.arrival_time_offset):.2f}"
+184,easy,12,14:56:36,17:19:42,17:20:10,COMPLETED,31101.0,0.4786,"8586.09, f{(task.end_time - task.arrival_time_offset):.2f}"
+190,easy,11,14:57:39,17:20:16,17:20:33,COMPLETED,26693.412162408757,0.2780,"8557.83, f{(task.end_time - task.arrival_time_offset):.2f}"
+183,medium,14,14:59:03,17:20:39,17:22:45,COMPLETED,33744.0,2.1055,"8496.54, f{(task.end_time - task.arrival_time_offset):.2f}"
+200,medium,13,14:59:52,17:22:51,17:24:57,COMPLETED,30898.0,2.0931,"8579.89, f{(task.end_time - task.arrival_time_offset):.2f}"
+222,easy,12,15:02:28,17:25:03,17:26:02,COMPLETED,26556.0,0.9825,"8555.50, f{(task.end_time - task.arrival_time_offset):.2f}"
+214,easy,12,15:04:56,17:26:08,17:27:07,COMPLETED,22734.0,0.9894,"8472.48, f{(task.end_time - task.arrival_time_offset):.2f}"
+230,medium,14,15:05:46,17:27:13,17:29:27,COMPLETED,35605.0,2.2396,"8487.87, f{(task.end_time - task.arrival_time_offset):.2f}"
+235,medium,13,15:11:27,17:29:34,17:31:42,COMPLETED,29811.0,2.1428,"8287.30, f{(task.end_time - task.arrival_time_offset):.2f}"
+238,easy,11,15:11:30,17:31:48,17:32:05,COMPLETED,24093.846894774204,0.2738,"8418.90, f{(task.end_time - task.arrival_time_offset):.2f}"
+216,easy,12,15:12:27,17:32:11,17:32:57,COMPLETED,32766.092030944583,0.7805,"8384.35, f{(task.end_time - task.arrival_time_offset):.2f}"
+223,easy,11,15:13:50,17:33:04,17:33:25,COMPLETED,26923.32859329623,0.3606,"8354.21, f{(task.end_time - task.arrival_time_offset):.2f}"
+237,easy,12,15:14:33,17:33:31,17:34:11,COMPLETED,23363.0,0.6721,"8338.87, f{(task.end_time - task.arrival_time_offset):.2f}"
+231,easy,11,15:19:12,17:34:18,17:34:52,COMPLETED,21647.894195807992,0.5699,"8106.22, f{(task.end_time - task.arrival_time_offset):.2f}"
+211,easy,11,15:19:50,17:34:58,17:35:20,COMPLETED,30421.416351409956,0.3667,"8108.44, f{(task.end_time - task.arrival_time_offset):.2f}"
+227,easy,11,15:22:04,17:35:26,17:35:48,COMPLETED,19840.032622863593,0.3683,"8002.47, f{(task.end_time - task.arrival_time_offset):.2f}"
+212,easy,12,15:23:12,17:35:54,17:36:29,COMPLETED,23733.480390259727,0.5895,"7962.60, f{(task.end_time - task.arrival_time_offset):.2f}"
+239,easy,12,15:32:19,17:36:35,17:37:34,COMPLETED,25206.0,0.9753,"7456.99, f{(task.end_time - task.arrival_time_offset):.2f}"
+217,medium,14,15:33:18,17:37:40,17:40:10,COMPLETED,36603.0,2.5200,"7462.53, f{(task.end_time - task.arrival_time_offset):.2f}"
+220,easy,12,15:36:11,17:40:17,17:41:22,COMPLETED,30927.754346848415,1.0957,"7446.77, f{(task.end_time - task.arrival_time_offset):.2f}"
+233,medium,14,15:38:53,17:41:29,17:44:12,COMPLETED,29531.771608025658,2.7285,"7356.56, f{(task.end_time - task.arrival_time_offset):.2f}"
+226,easy,12,15:39:29,17:44:19,17:45:54,COMPLETED,34337.0,1.5848,"7490.29, f{(task.end_time - task.arrival_time_offset):.2f}"
+232,easy,12,15:40:03,17:46:00,17:46:52,COMPLETED,28609.259987095356,0.8785,"7557.40, f{(task.end_time - task.arrival_time_offset):.2f}"
+229,medium,13,15:40:07,17:46:59,17:48:40,COMPLETED,32887.0,1.6998,"7612.13, f{(task.end_time - task.arrival_time_offset):.2f}"
+225,easy,11,15:43:54,17:48:47,17:49:21,COMPLETED,23866.65104412538,0.5763,"7493.15, f{(task.end_time - task.arrival_time_offset):.2f}"
+221,easy,12,15:44:25,17:49:27,17:49:56,COMPLETED,24021.0,0.4794,"7502.76, f{(task.end_time - task.arrival_time_offset):.2f}"
+213,easy,12,15:46:10,17:50:02,17:50:30,COMPLETED,24685.205432047023,0.4705,"7432.55, f{(task.end_time - task.arrival_time_offset):.2f}"
+218,easy,11,15:46:28,17:50:36,17:50:59,COMPLETED,30499.98745828269,0.3813,"7448.81, f{(task.end_time - task.arrival_time_offset):.2f}"
+215,medium,14,15:48:51,17:51:05,17:53:36,COMPLETED,34161.0,2.5230,"7334.72, f{(task.end_time - task.arrival_time_offset):.2f}"
+224,easy,11,15:51:39,17:53:43,17:53:58,COMPLETED,21532.002445833372,0.2624,"7324.13, f{(task.end_time - task.arrival_time_offset):.2f}"
+236,easy,12,15:54:00,17:54:04,17:54:45,COMPLETED,29057.7645958871,0.6824,"7204.91, f{(task.end_time - task.arrival_time_offset):.2f}"
+228,medium,13,15:54:34,17:54:51,17:55:58,COMPLETED,32664.454424655094,1.1092,"7217.88, f{(task.end_time - task.arrival_time_offset):.2f}"
+234,easy,11,15:56:58,17:56:04,17:56:32,COMPLETED,23825.869749325873,0.4731,"7146.46, f{(task.end_time - task.arrival_time_offset):.2f}"
+210,easy,11,15:58:20,17:56:38,17:56:54,COMPLETED,28026.250830318986,0.2646,"7098.86, f{(task.end_time - task.arrival_time_offset):.2f}"
+219,easy,12,15:59:30,17:57:00,17:57:42,COMPLETED,31858.0,0.6918,"7050.77, f{(task.end_time - task.arrival_time_offset):.2f}"
+259,medium,13,16:02:06,17:57:48,17:58:53,COMPLETED,27031.0,1.0911,"6942.30, f{(task.end_time - task.arrival_time_offset):.2f}"
+253,easy,12,16:02:35,17:58:59,17:59:28,COMPLETED,28150.0,0.4867,"6984.79, f{(task.end_time - task.arrival_time_offset):.2f}"
+255,easy,12,16:03:57,17:59:35,18:00:00,UNFINISHED,-1,-1,-1
+264,easy,12,16:06:13,-,-,IGNORED,-1,-1
+262,easy,11,16:08:52,-,-,IGNORED,-1,-1
+245,easy,11,16:09:11,-,-,IGNORED,-1,-1
+269,easy,12,16:10:59,-,-,IGNORED,-1,-1
+260,easy,12,16:14:45,-,-,IGNORED,-1,-1
+257,medium,13,16:16:19,-,-,IGNORED,-1,-1
+266,hard,15,16:17:11,-,-,IGNORED,-1,-1
+250,easy,11,16:19:47,-,-,IGNORED,-1,-1
+248,medium,14,16:25:34,-,-,IGNORED,-1,-1
+256,easy,11,16:25:51,-,-,IGNORED,-1,-1
+247,hard,16,16:27:19,-,-,IGNORED,-1,-1
+251,medium,14,16:29:32,-,-,IGNORED,-1,-1
+242,medium,14,16:31:51,-,-,IGNORED,-1,-1
+249,easy,12,16:37:52,-,-,IGNORED,-1,-1
+267,easy,12,16:41:28,-,-,IGNORED,-1,-1
+254,easy,12,16:43:17,-,-,IGNORED,-1,-1
+241,medium,14,16:43:40,-,-,IGNORED,-1,-1
+246,easy,12,16:43:47,-,-,IGNORED,-1,-1
+240,easy,11,16:46:06,-,-,IGNORED,-1,-1
+261,easy,11,16:46:54,-,-,IGNORED,-1,-1
+258,easy,12,16:49:15,-,-,IGNORED,-1,-1
+252,hard,16,16:49:34,-,-,IGNORED,-1,-1
+244,easy,12,16:49:44,-,-,IGNORED,-1,-1
+265,easy,12,16:50:13,-,-,IGNORED,-1,-1
+263,hard,15,16:51:56,-,-,IGNORED,-1,-1
+243,easy,12,16:57:04,-,-,IGNORED,-1,-1
+268,easy,11,16:58:16,-,-,IGNORED,-1,-1
+276,easy,11,17:01:04,-,-,IGNORED,-1,-1
+289,medium,13,17:01:18,-,-,IGNORED,-1,-1
+271,easy,11,17:01:27,-,-,IGNORED,-1,-1
+279,medium,14,17:03:40,-,-,IGNORED,-1,-1
+272,medium,13,17:04:52,-,-,IGNORED,-1,-1
+282,easy,12,17:11:27,-,-,IGNORED,-1,-1
+297,easy,12,17:11:43,-,-,IGNORED,-1,-1
+292,easy,11,17:13:26,-,-,IGNORED,-1,-1
+283,easy,12,17:15:50,-,-,IGNORED,-1,-1
+273,easy,12,17:16:18,-,-,IGNORED,-1,-1
+287,hard,15,17:16:45,-,-,IGNORED,-1,-1
+278,easy,11,17:16:46,-,-,IGNORED,-1,-1
+293,easy,12,17:18:04,-,-,IGNORED,-1,-1
+275,easy,11,17:18:35,-,-,IGNORED,-1,-1
+284,easy,11,17:21:37,-,-,IGNORED,-1,-1
+299,easy,11,17:22:27,-,-,IGNORED,-1,-1
+281,medium,14,17:29:44,-,-,IGNORED,-1,-1
+270,medium,14,17:33:50,-,-,IGNORED,-1,-1
+280,easy,12,17:36:22,-,-,IGNORED,-1,-1
+286,medium,14,17:37:38,-,-,IGNORED,-1,-1
+296,easy,12,17:42:27,-,-,IGNORED,-1,-1
+290,easy,11,17:43:31,-,-,IGNORED,-1,-1
+277,easy,12,17:44:23,-,-,IGNORED,-1,-1
+295,easy,11,17:45:31,-,-,IGNORED,-1,-1
+291,easy,12,17:46:09,-,-,IGNORED,-1,-1
+274,medium,14,17:46:51,-,-,IGNORED,-1,-1
+294,medium,14,17:47:52,-,-,IGNORED,-1,-1
+298,easy,11,17:51:17,-,-,IGNORED,-1,-1
+288,medium,13,17:52:51,-,-,IGNORED,-1,-1
+285,medium,14,17:56:37,-,-,IGNORED,-1,-1
