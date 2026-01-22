@@ -224,7 +224,7 @@ def run_simulation(args):
 
                     print(
                         f" [OK] [{current_sim_time_str}] KONIEC Zadania {task.id}.{task.difficulty}. Koszt: {best:.2f}. Czas (sim): {(task.end_time - task.start_time) / 60:.1f} min. "
-                        f"Czas w systemie: {task.end_time-task.arrival_time_offset}, Czas pojawienia sie: {task.arrival_time_offset}")
+                        f"Czas w systemie: {(task.end_time-task.arrival_time_offset)/60:.1f}, Czas pojawienia sie: {(task.arrival_time_offset)/60:.1f}")
 
                     with open(csv_file, "a", newline="") as f:
                         writer = csv.writer(f)
