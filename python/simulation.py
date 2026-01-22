@@ -94,7 +94,8 @@ def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
 
     tasks.sort(key=lambda x: x.arrival_time_offset)
     for task in tasks:
-        print(task.difficulty)
+        if task.difficulty == "very hard":
+            print(task.difficulty)
     return tasks
 
 
