@@ -7,12 +7,12 @@ import time
 def run_experiments(seed):
     configs = [
         ("B", 10),
-        ("B", 20),
         ("B", 30),
         ("B", 50),
-        ("B", 60),
         ("B", 70),
-        ("B", 80),
+        ("B", 90),
+        ("B", 110),
+        ("B", 130),
 
         ("A", 10),
         ("A", 15),
@@ -54,5 +54,5 @@ def run_experiments(seed):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CVRP Day Simulator")
     parser.add_argument("--seed", type=int, default=1, help="Seed dla uruchomienia")
-    for i in range(3, 9):
+    for i in range(9, 13):
         run_experiments(i)
