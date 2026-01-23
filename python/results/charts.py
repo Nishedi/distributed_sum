@@ -157,7 +157,7 @@ def analyze_and_plot():
     plt.legend()
     plt.grid(True)
 
-    output_filename = 'wykres_centyl_95_avg_arch.png'
+    output_filename = '../wykres_centyl_95_avg_arch.png'
     plt.savefig(output_filename)
     print(f"\nWykres zapisano jako: {output_filename}")
     # plt.show() # Odkomentuj jeśli uruchamiasz lokalnie z GUI
