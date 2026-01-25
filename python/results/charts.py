@@ -12,7 +12,7 @@ def analyze_and_plot():
     print(f"Znaleziono plików: {len(files)}")
 
     for filename in files:
-        match = re.search(r"sim_results_([AB])_(\d+)_Seed(\d+)tph\.csv", filename)
+        match = re.search(r"sim_results_([AB])_(\d+)_Seed(\d+)_ntph\.csv", filename)
 
         if match:
             mode = match.group(1)
@@ -70,7 +70,7 @@ def analyze_and_plot():
     plt.legend()
     plt.grid(True)
 
-    output_filename = 'wykres_centyl_95_avg_arch.png'
+    output_filename = '../fig/wykres_centyl_95_avg_arch_n.png'
     plt.savefig(output_filename)
     print(f"\nWykres zapisano jako: {output_filename}")
 

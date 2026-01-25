@@ -194,4 +194,4 @@ def analyze_hourly_congestion_avg_of_percentiles(target_mode, target_tph):
 
 if __name__ == "__main__":
     # Przykład wywołania
-    analyze_hourly_congestion_avg_of_percentiles("A", 30)
+    analyze_hourly_congestion_avg_of_percentiles("B", 70)
