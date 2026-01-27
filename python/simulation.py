@@ -66,7 +66,7 @@ def generate_schedule(n_tasks_per_hour, total_hours, seed = 42):
     task_counter = 0
 
     # 60% Easy (11-12), 30% Medium (13-14), 10% Hard (15-16)
-    probs = [0.5, 0.32, 0.18, 0]
+    probs = [0, 0, 1, 0] # research on 0.5 0.32 0.18
     types = ["easy", "medium", "hard", "very hard"]
 
     ranges = {
@@ -140,7 +140,7 @@ def run_simulation(args):
 
     total_cpus = int(ray.cluster_resources().get("CPU", 1))
 
-    csv_file = f"results/sim_results_{mode}_{tasks_per_hour}_Seed{args.seed}_ntph.csv"
+    csv_file = f"results/sim_results_{mode}_{tasks_per_hour}_Seed{args.seed}_hardtph.csv"
     with open(csv_file, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["task_id", "difficulty", "n", "arrival_sim", "start_sim", "end_sim", "status", "cost",
