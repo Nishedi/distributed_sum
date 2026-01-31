@@ -12,7 +12,7 @@ def analyze_and_plot():
     print(f"Znaleziono plików: {len(files)}")
 
     for filename in files:
-        match = re.search(r"sim_results_([AB])_(\d+)_Seed(\d+)_ntph\.csv", filename)
+        match = re.search(r"sim_results_([AB])_(\d+)_Seed(\d+)_hardtph\.csv", filename)
 
         if match:
             mode = match.group(1)
@@ -58,19 +58,21 @@ def analyze_and_plot():
 
     data_a = res_df[res_df['Mode'] == 'A']
     if not data_a.empty:
-        plt.plot(data_a['TPH'], data_a['P95'], marker='o', label='Podejście A (Cluster - Latency)')
+        plt.plot(data_a['TPH'], data_a['P95'], marker='o', label='Approach A (Cluster - Latency)')
 
     data_b = res_df[res_df['Mode'] == 'B']
     if not data_b.empty:
-        plt.plot(data_b['TPH'], data_b['P95'], marker='s', label='Podejście B (Node - Throughput)')
+        plt.plot(data_b['TPH'], data_b['P95'], marker='s', label='Approach B (Node - Throughput)')
 
-    plt.xlabel('Częstotliwość napływu zadań (Zadania/h)')
-    plt.ylabel('Średni 95. centyl czasu w systemie [s]')
-    plt.title('Zależność czasu obsługi od obciążenia (Uśrednione z wielu prób)')
+
+    plt.xlabel('Task arrival rate (tasks/hour)')
+    plt.ylabel('Mean 95th percentile of time spent in the system [s]')
+    plt.title('Dependence of service time on system load (averaged over multiple trials)')
+
     plt.legend()
     plt.grid(True)
 
-    output_filename = '../fig/wykres_centyl_95_avg_arch_n.png'
+    output_filename = '../fig/wykres_centyl_95_avg_arch_hard.png'
     plt.savefig(output_filename)
     print(f"\nWykres zapisano jako: {output_filename}")
 

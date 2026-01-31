@@ -192,6 +192,131 @@ def analyze_hourly_congestion_avg_of_percentiles(target_mode, target_tph):
     # plt.show()
 
 
+import glob
+import pandas as pd
+import matplotlib.pyplot as plt
+import datetime
+import os
+
+
+def get_mode_stats(mode, tph):
+    """
+    Pomocnicza funkcja, która zwraca DataFrame ze średnimi centylami dla danego Mode.
+    Zwraca None, jeśli nie znaleziono plików.
+    """
+    file_pattern = f"sim_results_{mode}_{tph}_Seed*tph.csv"
+    files = glob.glob(file_pattern)
+
+    print(f"   -> Szukam plików dla Mode {mode}... Znaleziono: {len(files)}")
+
+    if not files:
+        return None
+
+    per_seed_hourly_stats = []
+    base_date = datetime.datetime.today().date()
+
+    # Funkcja do parsowania czasu
+    def parse_time(t_str):
+        try:
+            t = datetime.datetime.strptime(t_str, '%H:%M:%S').time()
+            return datetime.datetime.combine(base_date, t)
+        except:
+            return pd.NaT
+
+    for filename in files:
+        try:
+            df = pd.read_csv(filename)
+            # Analizujemy tylko COMPLETED (możesz tu zmienić logikę jeśli chcesz uwzględniać inne)
+            df = df[df['status'] == 'COMPLETED'].copy()
+
+            if df.empty:
+                continue
+
+            df['arrival_dt'] = df['arrival_sim'].apply(parse_time)
+            df['end_dt'] = df['end_sim'].apply(parse_time)
+            df = df.dropna(subset=['arrival_dt', 'end_dt'])
+
+            # Czas w systemie w sekundach
+            df['system_time_sec'] = (df['end_dt'] - df['arrival_dt']).dt.total_seconds()
+            df['arrival_hour'] = df['arrival_dt'].dt.hour
+
+            # KROK 1: P95 dla tego konkretnego Seeda
+            seed_p95 = df.groupby('arrival_hour')['system_time_sec'].quantile(0.95).reset_index()
+            seed_p95.columns = ['Hour', 'P95_Val']
+            print(filename)
+            print(seed_p95)
+
+            per_seed_hourly_stats.append(seed_p95)
+
+        except Exception as e:
+            print(f"Błąd w pliku {filename}: {e}")
+
+    if not per_seed_hourly_stats:
+        return None
+
+    # Łączymy wyniki seedów
+    all_seeds_df = pd.concat(per_seed_hourly_stats, ignore_index=True)
+
+
+    # KROK 2: Średnia z percentyli
+    final_stats = all_seeds_df.groupby('Hour')['P95_Val'].mean().reset_index()
+    return final_stats.sort_values('Hour')
+
+
+def analyze_hourly_comparison(target_tph):
+    """
+    Główna funkcja porównująca Mode A i Mode B dla zadanego TPH.
+    """
+    print(f"\n=== Analiza Porównawcza (TPH={target_tph}) ===")
+
+    # Pobieramy dane dla obu trybów
+    stats_a = get_mode_stats("A", target_tph)
+    stats_b = get_mode_stats("B", target_tph)
+
+    if stats_a is None and stats_b is None:
+        print("Brak danych dla obu trybów. Koniec.")
+        return
+
+    # --- RYSOWANIE ---
+    plt.figure(figsize=(10, 6))
+
+    # Rysuj A (jeśli jest)
+    if stats_a is not None and not stats_a.empty:
+        plt.plot(stats_a['Hour'], stats_a['P95_Val'],
+                 marker='o', linestyle='-', linewidth=2, color='red',
+                 label=f'Mode A (Cluster)')
+        print("Dodano serię dla Mode A.")
+
+    # Rysuj B (jeśli jest)
+    if stats_b is not None and not stats_b.empty:
+        plt.plot(stats_b['Hour'], stats_b['P95_Val'],
+                 marker='s', linestyle='--', linewidth=2, color='blue',
+                 label=f'Mode B (Node Parallel)')
+        print("Dodano serię dla Mode B.")
+
+    plt.xlabel('Godzina napływu zadania (08:00 - ...)')
+    plt.ylabel('Średni 95. Centyl czasu w systemie [s]')
+    plt.title(
+        f'Porównanie zatorów w ciągu dnia (TPH: {target_tph})\n(Metoda: Średnia z percentyli poszczególnych symulacji)')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend()
+
+    # Ustalanie zakresu osi X
+    all_hours = []
+    if stats_a is not None: all_hours.extend(stats_a['Hour'].tolist())
+    if stats_b is not None: all_hours.extend(stats_b['Hour'].tolist())
+
+    if all_hours:
+        plt.xticks(range(int(min(all_hours)), int(max(all_hours)) + 1))
+
+    output_filename = f'../fig/wykres_porownanie_A_vs_B_tph{target_tph}.png'
+    plt.savefig(output_filename)
+    print(f"\nWykres zapisano jako: {output_filename}")
+    # plt.show()
+
+
 if __name__ == "__main__":
-    # Przykład wywołania
-    analyze_hourly_congestion_avg_of_percentiles("B", 70)
+    analyze_hourly_comparison(20)
+    analyze_hourly_comparison(30)
+    analyze_hourly_comparison(130)
+    # stats_a = get_mode_stats("A", 35)
